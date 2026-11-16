@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ApiClientError, post } from "../api/client";
 import { setToken } from "./token";
 
@@ -28,7 +28,7 @@ export function Login() {
         password,
       });
       setToken(res.token);
-      navigate("/");
+      navigate({ to: "/" });
     } catch (err) {
       setError(
         err instanceof ApiClientError ? err.message : "Failed to log in",

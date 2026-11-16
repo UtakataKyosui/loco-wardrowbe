@@ -1,4 +1,4 @@
-import { Link, Outlet, useNavigate } from 'react-router'
+import { Link, Outlet, useNavigate } from "@tanstack/react-router"
 import { clearToken, getToken } from './auth/token'
 
 export function App() {
@@ -7,7 +7,7 @@ export function App() {
 
   function handleLogout() {
     clearToken()
-    navigate('/login')
+    navigate({ to: '/login' })
   }
 
   return (

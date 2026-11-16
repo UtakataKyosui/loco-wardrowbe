@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link } from "react-router";
+import { Link } from "@tanstack/react-router";
 import { ApiClientError, post } from "../api/client";
 
 export function Register() {

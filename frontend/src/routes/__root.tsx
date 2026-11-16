@@ -4,10 +4,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
   HeadContent,
-  Outlet,
   Scripts,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { App } from "../App";
 import "lism-css/main.css";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -27,7 +27,7 @@ function RootComponent() {
   return (
     <RootDocument>
       <QueryClientProvider client={queryClient}>
-        <Outlet />
+        <App />
       </QueryClientProvider>
     </RootDocument>
   );
