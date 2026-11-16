@@ -9,6 +9,7 @@ import {
 import type { ReactNode } from "react";
 import { App } from "../App";
 import "lism-css/main.css";
+import '@utakata-ui/react/styles.css';
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({

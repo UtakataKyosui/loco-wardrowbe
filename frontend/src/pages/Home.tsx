@@ -1,18 +1,19 @@
 import { Link } from "@tanstack/react-router"
+import { Group, Heading, List, Text } from "lism-css/react"
 
 export function Home() {
   return (
     <div>
-      <h1>Welcome to Loco</h1>
-      <nav>
-        <ul>
+      <Heading>Welcome to Loco</Heading>
+      <Group as="nav">
+        <List>
           {/* scaffold:nav */}
-        </ul>
-      </nav>
-      <p>
+        </List>
+      </Group>
+      <Text>
         <Link to="/login">Log in</Link> or{' '}
         <Link to="/register">sign up</Link> to get started.
-      </p>
+      </Text>
     </div>
   )
 }

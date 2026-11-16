@@ -39,6 +39,7 @@ uuid = { version = "1.6", features = ["v4"] }
 ts-rs = { version = "12", features = ["chrono-impl", "serde-compat"] }
 include_dir = { version = "0.7" }
 axum-extra = { version = "0.10", features = ["form"] }
+loco-openapi = { version = "0.1.2", features = ["full"] }
 
 [[bin]]
 name = "wardrowbe-cli"
