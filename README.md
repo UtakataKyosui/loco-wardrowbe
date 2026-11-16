@@ -56,3 +56,17 @@ You can check your [configuration](config/development.yaml) to pick either front
 ## Getting help
 
 Check out [a quick tour](https://loco.rs/docs/tutorials/the-tour/) or [build your first app](https://loco.rs/docs/tutorials/your-first-app/).
+
+## Local services
+
+開発用の PostgreSQL は Docker Compose で起動する。アプリ本体はホストの `cargo loco start` で動かす。
+
+```sh
+docker compose up -d db
+```
+
+既定の `DATABASE_URL`（`config/development.yaml`）がそのまま接続できる。Redis とメールキャッチャー（<http://localhost:1080>）が必要なときは `extras` プロファイルを指定する。
+
+```sh
+docker compose --profile extras up -d
+```
