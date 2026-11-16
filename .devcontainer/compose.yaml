@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    mem_limit: 4g
+    networks:
+      - db
+      - redis
+      - mailer
+    volumes:
+      - ..:/workspaces/wardrowbe:cached
+      - cargo-target:/cargo-target
+    env_file:
+      - .env
+  db:
+    image: postgres:15.3-alpine
+    restart: unless-stopped
+    mem_limit: 512m
+    ports:
+      - 5432:5432
+    networks:
+      - db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    mem_limit: 128m
+    ports:
+      - 6379:6379
+    networks:
+      - redis
+  mailer:
+    image: mailtutan/mailtutan:latest
+    restart: unless-stopped
+    mem_limit: 64m
+    ports:
+      - 1080:1080
+      - 1025:1025
+    networks:
+      - mailer
+
+volumes:
+  postgres-data:
+  cargo-target:
+
+
+networks:
+  db:
+  redis:
+  mailer:

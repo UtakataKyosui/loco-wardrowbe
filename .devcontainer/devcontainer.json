@@ -1,0 +1,13 @@
+{
+    "name": "Loco",
+    "dockerComposeFile": "compose.yaml",
+    "service": "app",
+    "runServices": [
+        "app",
+        "db"
+    ],
+    "workspaceFolder": "/workspaces/wardrowbe",
+    "forwardPorts": [
+        5150
+    ]
+}
