@@ -70,3 +70,18 @@ docker compose up -d db
 ```sh
 docker compose --profile extras up -d
 ```
+
+## Frontend と backend を並べて開発する
+
+ターミナルを 2 つ使い、それぞれ起動する。
+
+```sh
+# 1: backend（http://localhost:5150）
+docker compose up -d db
+cargo loco start
+
+# 2: frontend（http://localhost:5173）
+cd frontend && pnpm dev
+```
+
+ブラウザは <http://localhost:5173> を開く。`frontend/vite.config.ts` の dev server proxy が `/api/*` を backend に転送するため、CORS 設定は不要。backend のポートを変えるときは、両方のターミナルで同じ `PORT` を渡す（例: `PORT=5151`）。

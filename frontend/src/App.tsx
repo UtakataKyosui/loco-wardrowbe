@@ -1,9 +1,10 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router"
-import { clearToken, getToken } from './auth/token'
+import { clearToken } from './auth/token'
+import { useIsAuthenticated } from './auth/useIsAuthenticated'
 
 export function App() {
   const navigate = useNavigate()
-  const isAuthenticated = getToken() !== null
+  const isAuthenticated = useIsAuthenticated()
 
   function handleLogout() {
     clearToken()

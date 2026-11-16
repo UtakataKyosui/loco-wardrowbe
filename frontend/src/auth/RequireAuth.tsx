@@ -1,8 +1,13 @@
 import { Navigate, Outlet } from "@tanstack/react-router";
-import { getToken } from "./token";
+import { useIsAuthenticated } from "./useIsAuthenticated";
 
 export function RequireAuth() {
-  if (getToken() === null) {
+  const isAuthenticated = useIsAuthenticated();
+
+  if (isAuthenticated === null) {
+    return null;
+  }
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

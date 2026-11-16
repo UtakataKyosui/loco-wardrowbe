@@ -1,13 +1,18 @@
 const TOKEN_KEY = "auth_token";
 
+// TanStack Start renders on the server too, where `window` does not exist.
+function storage(): Storage | null {
+  return typeof window === "undefined" ? null : window.localStorage;
+}
+
 export function getToken(): string | null {
-  return window.localStorage.getItem(TOKEN_KEY);
+  return storage()?.getItem(TOKEN_KEY) ?? null;
 }
 
 export function setToken(t: string): void {
-  window.localStorage.setItem(TOKEN_KEY, t);
+  storage()?.setItem(TOKEN_KEY, t);
 }
 
 export function clearToken(): void {
-  window.localStorage.removeItem(TOKEN_KEY);
+  storage()?.removeItem(TOKEN_KEY);
 }
