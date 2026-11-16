@@ -1,4 +1,6 @@
 import { defineConfig, loadEnv, lazyPlugins } from "vite-plus";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { lismCss } from "@lism-css/plugin/vite";
 import react from "@vitejs/plugin-react";
 
 // The backend reads its port from `PORT` (see `config/development.yaml`:
@@ -19,8 +21,12 @@ export default defineConfig(({ mode }) => {
       rules: { "vite-plus/prefer-vite-plus-imports": "error" },
       options: { typeAware: true, typeCheck: true },
     },
-    plugins: lazyPlugins(() => [react()]),
-    build: { outDir: "dist" },
+    plugins: lazyPlugins(() => [
+      lismCss(),
+      tanstackStart(),
+      // react's vite plugin must come after start's vite plugin
+      react(),
+    ]),
     server: {
       port: 5173,
       proxy: { "/api": `http://localhost:${backendPort}` },
