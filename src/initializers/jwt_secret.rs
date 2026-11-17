@@ -28,10 +28,11 @@ impl Initializer for JwtSecretInitializer {
     }
 
     async fn before_run(&self, ctx: &AppContext) -> Result<()> {
-        match ctx.config.auth.as_ref().and_then(|auth| auth.jwt.as_ref()) {
-            Some(jwt) => check_secret(&jwt.secret),
-            None => Ok(()),
-        }
+        ctx.config
+            .auth
+            .as_ref()
+            .and_then(|auth| auth.jwt.as_ref())
+            .map_or(Ok(()), |jwt| check_secret(&jwt.secret))
     }
 }
 
