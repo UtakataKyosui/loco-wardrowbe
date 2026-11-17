@@ -24,8 +24,9 @@ server:
   middlewares: 
     fallback:
       enable: false
+    # Tests do not serve the frontend; the SSR build has no frontend/dist/index.html.
     static:
-      enable: true
+      enable: false
       must_exist: true
       precompressed: false
       folder:

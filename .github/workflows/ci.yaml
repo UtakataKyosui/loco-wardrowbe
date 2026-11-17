@@ -6,13 +6,52 @@ on:
       - main
   pull_request:
 
+# Cancel superseded runs of the same PR / branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   RUST_TOOLCHAIN: stable
   TOOLCHAIN_PROFILE: minimal
+  NODE_VERSION: "22"
 
 jobs:
+  # Detect which parts of the repo a change touches so that unrelated jobs are
+  # skipped. Skipped jobs count as successful for required status checks.
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - 'src/**'
+              - 'tests/**'
+              - 'migration/**'
+              - 'examples/**'
+              - 'config/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - '.github/workflows/ci.yaml'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/ci.yaml'
+
   rustfmt:
     name: Check Style
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
 
     permissions:
@@ -33,6 +72,8 @@ jobs:
 
   clippy:
     name: Run Clippy
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
 
     permissions:
@@ -46,14 +87,45 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
+        with:
+          # Only main writes the cache; PRs restore it without polluting it.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms
 
+  frontend:
+    name: Build Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Build frontend
+        run: pnpm install --frozen-lockfile && pnpm run build
+        working-directory: ./frontend
+
   test:
     name: Run Tests
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
 
     permissions:
@@ -89,15 +161,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{matrix.node-version}}
-      - name: Build frontend
-        run: npm install && npm run build
-        working-directory: ./frontend
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
+        with:
+          # Only main writes the cache; PRs restore it without polluting it.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
