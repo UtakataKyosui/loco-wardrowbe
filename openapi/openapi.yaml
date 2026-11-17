@@ -1,0 +1,373 @@
+openapi: 3.1.0
+info:
+  title: wardrowbe API
+  description: HTTP API of wardrowbe, built on [Loco](https://loco.rs).
+  license:
+    name: ''
+  version: 0.1.0
+paths:
+  /api/auth/current:
+    get:
+      tags:
+      - auth
+      summary: Returns the signed-in user
+      description: Reads the user identified by the JWT in the `Authorization` header.
+      operationId: current
+      responses:
+        '200':
+          description: The signed-in user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - jwt_token: []
+  /api/auth/forgot:
+    post:
+      tags:
+      - auth
+      summary: |-
+        In case the user forgot his password  this endpoints generate a forgot token
+        and send email to the user. In case the email not found in our DB, we are
+        returning a valid request for security reasons (not exposing users DB
+        list).
+      operationId: forgot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotParams'
+        required: true
+      responses:
+        '200':
+          description: Request accepted. Always 200, even when the email is unknown
+        '400':
+          description: Request body is not valid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/login:
+    post:
+      tags:
+      - auth
+      summary: Creates a user login and returns a token
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginParams'
+        required: true
+      responses:
+        '200':
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/magic-link:
+    post:
+      tags:
+      - auth
+      summary: Magic link authentication provides a secure and passwordless way to log in to the application.
+      description: |-
+        # Flow
+        1. **Request a Magic Link**:
+           A registered user sends a POST request to `/magic-link` with their email.
+           If the email exists, a short-lived, one-time-use token is generated and sent to the user's email.
+           For security and to avoid exposing whether an email exists, the response always returns 200, even if the email is invalid.
+
+        2. **Click the Magic Link**:
+           The user clicks the link (/magic-link/{token}), which validates the token and its expiration.
+           If valid, the server generates a JWT and responds with a [`LoginResponse`].
+           If invalid or expired, an unauthorized response is returned.
+
+        This flow enhances security by avoiding traditional passwords and providing a seamless login experience.
+      operationId: magic_link
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MagicLinkParams'
+        required: true
+      responses:
+        '200':
+          description: Request accepted. Always 200, even when the email is unknown
+        '400':
+          description: Email is not on an allowed domain, or the body is not valid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/magic-link/{token}:
+    get:
+      tags:
+      - auth
+      summary: Verifies a magic link token and authenticates the user.
+      operationId: magic_link_verify
+      parameters:
+      - name: token
+        in: path
+        description: One-time magic link token
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/register:
+    post:
+      tags:
+      - auth
+      summary: |-
+        Register function creates a new user with the given parameters and sends a
+        welcome email to the user
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterParams'
+        required: true
+      responses:
+        '200':
+          description: Request accepted. Always 200, even when the email is already taken, so registered emails are not exposed
+        '400':
+          description: Request body is not valid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/resend-verification-mail:
+    post:
+      tags:
+      - auth
+      summary: Re-sends the verification email
+      description: Always answers 200 so registered emails are not exposed.
+      operationId: resend_verification_email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendVerificationParams'
+        required: true
+      responses:
+        '200':
+          description: Request accepted
+        '400':
+          description: Request body is not valid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/reset:
+    post:
+      tags:
+      - auth
+      summary: reset user password by the given parameters
+      operationId: reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetParams'
+        required: true
+      responses:
+        '200':
+          description: Request accepted. Always 200, even when the token is unknown
+        '400':
+          description: Request body is not valid JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/verify/{token}:
+    get:
+      tags:
+      - auth
+      summary: |-
+        Verify register user. if the user not verified his email, he can't login to
+        the system.
+      operationId: verify
+      parameters:
+      - name: token
+        in: path
+        description: Email verification token
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Email verified (or already verified)
+        '401':
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    CurrentResponse:
+      type: object
+      required:
+      - pid
+      - name
+      - email
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        pid:
+          type: string
+    ErrorResponse:
+      type: object
+      description: |-
+        The JSON body Loco sends for an error response (`loco_rs::controller::ErrorDetail`).
+
+        This is the `OpenAPI` description of what the server really returns; use it as
+        the `body` of every error response in `#[utoipa::path]`.
+      properties:
+        description:
+          type:
+          - string
+          - 'null'
+          description: Human-readable explanation.
+        error:
+          type:
+          - string
+          - 'null'
+          description: Short error kind, e.g. `unauthorized`.
+        errors:
+          description: Field-level details, present on validation failures.
+    ForgotParams:
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string
+    LoginParams:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      required:
+      - token
+      - pid
+      - name
+      - is_verified
+      properties:
+        is_verified:
+          type: boolean
+        name:
+          type: string
+        pid:
+          type: string
+        token:
+          type: string
+    MagicLinkParams:
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string
+    RegisterParams:
+      type: object
+      required:
+      - email
+      - password
+      - name
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+    ResendVerificationParams:
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string
+    ResetParams:
+      type: object
+      required:
+      - token
+      - password
+      properties:
+        password:
+          type: string
+        token:
+          type: string
+  securitySchemes:
+    jwt_token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: auth
+  description: Registration, login and account recovery

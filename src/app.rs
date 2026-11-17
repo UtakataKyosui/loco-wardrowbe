@@ -11,6 +11,8 @@ use loco_rs::{
     Result,
 };
 use migration::Migrator;
+
+use crate::initializers::openapi::OpenapiInitializer;
 use std::path::Path;
 
 #[allow(unused_imports)]
@@ -42,7 +44,7 @@ impl Hooks for App {
     }
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
-        Ok(vec![])
+        Ok(vec![Box::new(OpenapiInitializer)])
     }
 
     fn routes(_ctx: &AppContext) -> AppRoutes {
@@ -59,6 +61,7 @@ impl Hooks for App {
         // tasks-inject (do not remove)
         tasks.register(tasks::user_create::UserCreate);
         tasks.register(tasks::user_delete::UserDelete);
+        tasks.register(tasks::openapi_export::OpenapiExport);
     }
     async fn truncate(ctx: &AppContext) -> Result<()> {
         truncate_table(&ctx.db, users::Entity).await?;

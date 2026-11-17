@@ -4,6 +4,7 @@ paths:
   - "src/views/**/*.rs"
   - "src/dtos/**/*.rs"
   - "src/initializers/openapi.rs"
+  - "src/tasks/openapi_export.rs"
   - "config/*.yaml"
   - "openapi/**"
   - "frontend/orval.config.ts"
@@ -16,7 +17,7 @@ paths:
 
 ```
 1. cargo loco generate scaffold   → Rust のコード一式
-2. loco-openapi のマクロを付ける  → ハンドラーとスキーマを OpenAPI に載せる
+2. utoipa のマクロを付ける        → ハンドラーとスキーマを OpenAPI に載せる
 3. OpenAPI YAML を書き出す        → openapi/openapi.yaml
 4. Orval で生成する               → HTTP クライアント + Zod + Effect Schema
 ```
@@ -26,7 +27,9 @@ paths:
 | 段階 | URL |
 |---|---|
 | 1 | <https://loco.rs/docs/how-to/use-generators/> |
-| 2, 3 | <https://github.com/loco-rs/loco-openapi-Initializer> |
+| 2 | <https://docs.rs/utoipa> |
+| 2 (enum を整数で扱う) | <https://zenn.dev/taro137/articles/29079c45405ad3> |
+| 3 (Scalar / Swagger UI などの配信) | <https://zenn.dev/usagram/articles/d0172d9b770bff> |
 | 4 (Zod) | <https://orval.dev/docs/guides/client-with-zod> |
 | 4 (Effect) | <https://orval.dev/docs/guides/client-with-effect> |
 
@@ -49,16 +52,21 @@ cargo loco db migrate && cargo loco db entities
 - 型名は推測せず、Loco の Generators & field types リファレンスを確認する。
 - ドメインロジックはモデルに置き、コントローラーは「パース → モデル呼び出し → レンダリング」に留める（`.claude/skills/loco/doctrine.md`）。
 
-## 2. loco-openapi のマクロを付ける
+## 2. utoipa のマクロを付ける
 
-scaffold 直後のハンドラーはまだ OpenAPI に載らない。次の 3 点を手で足す。依存は `loco-openapi = { version = "0.1", features = ["full"] }`（`Cargo.toml` に導入済み）。
+scaffold 直後のハンドラーはまだ OpenAPI に載らない。次の 3 点を手で足す。依存は `utoipa`（`chrono` / `uuid` / `yaml` 機能付き）と `utoipa-scalar`（`axum` 機能付き）で、`Cargo.toml` に導入済み。
 
-1. **スキーマ**: レスポンス・リクエストに使う struct と、`utoipa::path` の `body` / `params` に現れる型すべてに `#[derive(ToSchema)]` を付ける。`src/views/**` と `src/dtos/**` が対象。
-2. **パス注釈**: 各ハンドラーに `#[utoipa::path(...)]` を付ける。`path` は `Routes::prefix` + `add` のパスと**完全一致**させる。`responses` には成功とエラーの両方を書く。ハンドラーの doc コメントの 1 行目がタイトル、以降が説明になる。
-3. **ルート登録**: `Routes::add` の `get(handler)` を `openapi(get(handler), routes!(handler))` に置き換える。
+> `loco-openapi` は Loco 1.3 に対応していないので使わない。`openapi(get(handler), routes!(handler))` のようなラッパーもない。ルートは通常どおり `get(handler)` で登録し、OpenAPI への登録は `ApiDoc` に明示する。
+
+1. **スキーマ**: レスポンス・リクエストに使う struct と、`utoipa::path` の `body` / `params` に現れる型すべてに `#[derive(utoipa::ToSchema)]` を付ける。`src/views/**` と `src/dtos/**` が対象。
+2. **パス注釈**: 各ハンドラーに `#[utoipa::path(...)]` を付け、ハンドラーを `pub` にする。`path` は `Routes::prefix` + `add` のパスと**完全一致**させる（`{id}` 形式。`:id` ではない）。`responses` には成功とエラーの両方を書く。ハンドラーの doc コメントの 1 行目が summary、以降が description になる。
+3. **`ApiDoc` への登録**: `src/initializers/openapi.rs` の `ApiDoc` の `paths(...)` にハンドラーを足す。`body` に現れない型は `components(schemas(...))` にも足す。
 
 ```rust
-use loco_openapi::prelude::*;
+use utoipa::ToSchema;
+
+#[derive(serde::Serialize, ToSchema)]
+pub struct PostResponse { /* ... */ }
 
 /// 投稿を 1 件取得する
 ///
@@ -66,56 +74,66 @@ use loco_openapi::prelude::*;
 #[utoipa::path(
     get,
     path = "/api/posts/{id}",
+    tag = "posts",
     security(("jwt_token" = [])),
     params(("id" = i32, Path, description = "Post ID")),
     responses(
         (status = 200, description = "Post found", body = PostResponse),
-        (status = 401, description = "Unauthorized", body = ApiError),
-        (status = 404, description = "Post not found", body = ApiError),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Post not found", body = ErrorResponse),
     ),
 )]
-async fn show(State(ctx): State<AppContext>, Path(id): Path<i32>) -> Result<Response> { /* ... */ }
+#[debug_handler]
+pub async fn show(State(ctx): State<AppContext>, Path(id): Path<i32>) -> Result<Response> { /* ... */ }
 
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("api/posts")
-        .add("/{id}", openapi(get(show), routes!(show)))
+        .add("/{id}", get(show))
 }
+```
+
+```rust
+// src/initializers/openapi.rs
+#[openapi(
+    // ...
+    paths(controllers::auth::login, controllers::posts::show),
+    components(schemas(views::posts::PostResponse)),
+)]
+pub struct ApiDoc;
 ```
 
 制約:
 
-- `utoipa::path` が付いたルートだけが仕様に出る。付け忘れるとフロントエンドの生成物から黙って消える。
-- `routes!` には**ハンドラーを 1 つだけ**渡す。複数渡さない。
-- 同じルートを自動収集（`openapi(...)`）と手動収集（`api_routes()` → `Some(vec![...])`）の両方に入れない。このアプリは自動収集に統一し、`src/initializers/openapi.rs` の第 2 引数は `None` のままにする。
-- 認証が要るルートには `security(("jwt_token" = []))` を付ける。これは initializer の `modifiers(&SecurityAddon)` と `set_jwt_location` が設定済みであることが前提。認証不要のルートは `security` を書かない（または `security(())`）。
-- 共通のエラーボディ（`ApiError`）はすべてのエラー応答で同じ型を指定し、Orval が 1 つのスキーマとして生成できるようにする。
-- テスト環境ではグローバル状態の競合を避けるため、initializer を `ctx.environment != Environment::Test` のときだけ登録する（または `cargo nextest` を使う）。
-- `info(title, description)` は `src/initializers/openapi.rs` の `ApiDoc` に書かれている。サンプルの文言のままなので、アプリの実態に合わせて直す。
+- `ApiDoc` の `paths(...)` に載せたハンドラーだけが仕様に出る。載せ忘れるとフロントエンドの生成物から黙って消える。
+- `#[utoipa::path]` の `security(...)` と `tag` は**文字列リテラル**しか受け付けない。定数は使えない。
+- 認証が要るルートには `security(("jwt_token" = []))` を付ける。`jwt_token` は `ApiDoc` の `modifiers(&SecurityAddon)` が登録する Bearer JWT（Loco の既定の JWT 位置）。認証不要のルートは `security` を書かない。JWT の位置を cookie / query に変えたら `SecurityAddon` も合わせる。
+- 共通のエラーボディは `dtos::common::ErrorResponse` をすべてのエラー応答で使う。Loco が実際に返す `{"error": ..., "description": ..., "errors": ...}`（`loco_rs::controller::ErrorDetail`）をそのまま写したもので、Orval が 1 つのスキーマとして生成できる。`dtos::common::ApiError`（`code` / `message`）は Loco の応答と一致しないので OpenAPI には使わない。
+- Axum の JSON 抽出に失敗したときは、不正な JSON が 400、スキーマ不一致が 422 で、どちらも `ErrorResponse` の形で返る。
+- `info(title, description)` は `ApiDoc` に書かれている。アプリの実態に合わせて直す。
+- 外部の型（`sea-orm` のエンティティなど）に `ToSchema` が付けられないときは、レスポンス専用の struct を `src/views/**` に作る。
+- enum が整数でシリアライズされるとき（`serde_repr` など）は、`ToSchema` の既定の出力が文字列になる。`PartialSchema` / `ToSchema` を手で実装して整数型のスキーマを返す。
 
 ## 3. OpenAPI YAML を書き出す
 
-可視化 UI（redoc / scalar / swagger）と JSON/YAML の配信 URL は `config/*.yaml` の `initializers.openapi` で決まる。
+`openapi/openapi.yaml` はサーバーを起動せずに、Loco のタスクで書き出す。
 
-```yaml
-initializers:
-  openapi:
-    scalar:
-      url: /scalar
-      spec_yaml_url: /scalar/openapi.yaml
-    swagger:
-      url: /swagger
-      spec_json_url: /api-docs/openapi.json # swagger は spec_json_url が必須
+```sh
+cargo loco task openapi:export                       # → openapi/openapi.yaml
+cargo loco task openapi:export out:path/to/spec.yaml # 出力先を変える
 ```
 
-- 開発サーバーを起動して YAML を取得し、リポジトリにコミットする。
-  ```sh
-  cargo loco start &
-  curl -fsS http://localhost:${PORT:-5150}/scalar/openapi.yaml -o openapi/openapi.yaml
-  ```
-- `openapi/openapi.yaml` は Orval の入力であり、API 契約のスナップショットでもある。ハンドラーやスキーマを変えたら再取得し、差分を同じ PR に含める。
-- YAML を手で編集しない。直したいときは Rust のマクロ側を直して再取得する。
-- 取得後に scalar（`/scalar`）で、追加したルートが出ているか確認する。
+- タスクもアプリを起動するので、DB（`compose.yaml` の `db`）が必要。
+- `openapi/openapi.yaml` は Orval の入力であり、API 契約のスナップショットでもある。ハンドラーやスキーマを変えたら再生成し、差分を同じ PR に含める。
+- 再生成を忘れると `cargo test` の `requests::openapi::committed_spec_is_up_to_date` が落ちる。
+- YAML を手で編集しない。直したいときは Rust のマクロ側を直して再生成する。
+- 開発サーバーでは、本番以外で次の URL が使える。`OpenapiInitializer`（`src/initializers/openapi.rs`）が配信しており、**production では配信しない**。
+
+  | URL | 内容 |
+  |---|---|
+  | `/scalar` | Scalar の API リファレンス。追加したルートが出ているか確認する |
+  | `/api-docs/openapi.json` | 仕様（JSON） |
+  | `/api-docs/openapi.yaml` | 仕様（YAML） |
 
 ## 4. Orval で Zod と Effect のコードを生成する
 
@@ -218,8 +236,6 @@ Orval の `override.mutator` に指定する手書きファイル。次を満た
 
 - `frontend/orval.config.ts` は空ファイル。
 - `effect` は `frontend/package.json` に未導入。導入は `vp add effect`。
-- `config/*.yaml` に `initializers.openapi` の設定がない。
-- `openapi/` ディレクトリがない。
 - `src/api/effect-fetch.ts` が未作成。
 - `frontend/package.json` に `codegen` script がない（`"codegen": "orval"` を追加し、`vp run codegen` で実行する）。
 - 既存の `frontend/src/api/client.ts` と `frontend/src/bindings/*`（ts-rs 由来）は手書きの暫定実装。生成クライアントに移行したら、新規コードからは使わない。
