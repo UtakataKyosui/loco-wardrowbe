@@ -35,7 +35,7 @@ HTTP API の外から観測できる振る舞い（ステータス、ヘッダ�
 4. **エラー本文は `application/problem+json`**（RFC 9457）。`type` / `title` / `status` / `detail` を持ち、`status` は実際の HTTP ステータスと一致させる。`src/initializers/problem_details.rs` のミドルウェアが `/api/` の全エラー応答（ハンドラー、`Json` / JWT の抽出子、404 / 405 を含む）をこの形に作り替えるので、ハンドラーは今までどおり `loco_rs::Error`（`unauthorized(...)` など）を返せばよい。内部エラーの詳細（SQL、スタック、パス）は 5xx の `detail` に出ない作りになっている（RFC 9457 §5）。新しいエラーの種類を足すときは、ミドルウェアの変換を通ることを `tests/requests/rfc.rs` で確かめる。
 5. **ステータスコードを使い分ける**: 作成は `201` + `Location`、本文なしの成功は `204`（本文を付けない）、非同期の受付は `202`、不正な JSON は `400`、`Content-Type` の不一致は `415`、構文は正しいが意味が不正な入力は `422`、レート制限は `429` + `Retry-After`。
 6. **トークンを返す応答は `Cache-Control: no-store`**（RFC 9111 §5.2.2.5、RFC 6749 §5.1 と同じ考え方）。ミドルウェアが `/api/auth/` の全応答に付ける。`token` を本文に含む応答を `/api/auth/` の外に作るときは、自分で付ける。
-7. **JWT**: 署名アルゴリズムの鍵長は RFC 7518 §3.2 に従う（HS512 は 512 ビット = 64 バイト以上）。`JwtSecretInitializer`（`src/initializers/jwt_secret.rs`）が、短い `auth.jwt.secret` では起動しないようにしている。`exp` を必ず検証し、`alg` はサーバー側で固定する（RFC 8725）。トークンを URL（パス・クエリ）に載せない。
+7. **JWT**: 署名アルゴリズムの鍵長は RFC 7518 §3.2 に従う（HS512 は 512 ビット = 64 バイト以上）。`JwtSecretInitializer`（`src/initializers/jwt_secret.rs`）が、`auth.jwt.secret`（Loco は base64 としてデコードして鍵にする）がデコード後 64 バイト未満、または base64 でないときは起動しないようにしている。`exp` を必ず検証し、`alg` はサーバー側で固定する（RFC 8725）。トークンを URL（パス・クエリ）に載せない。
 8. **日時は RFC 3339**（`2026-11-17T01:19:03Z`）。`chrono::DateTime<Utc>`（または `FixedOffset`）を使い、タイムゾーンを持たない `NaiveDateTime` をそのまま API に出さない。OpenAPI は `format: date-time`。
 9. **ID は UUID の正規形**（小文字 8-4-4-4-12、RFC 9562）。レスポンスの型は `String` ではなく `uuid::Uuid` にして、OpenAPI に `format: uuid` を出させる（`views/auth.rs` の `pid`）。
 10. **メールアドレスを正規表現で検証しない**。`validator` の `#[validate(email)]` を使う。ドメイン部は大文字小文字を区別しない（RFC 5321 §2.4、RFC 4343）ので、許可リストなどの比較は `eq_ignore_ascii_case` で行う（`controllers/auth.rs` の `is_allowed_email_domain`）。
@@ -52,7 +52,7 @@ HTTP API の外から観測できる振る舞い（ステータス、ヘッダ�
 | 2 | エラー本文が `application/problem+json` でない（RFC 9457） | 済 | 同上。`ProblemDetails` を OpenAPI にも反映 |
 | 3 | 415 / 422 / 不正 JSON の本文がどれも `Bad Request`。OpenAPI に 415 がない | 済 | ステータスに合う `title` / `detail`。検証エラーは 422 + `errors`（JSON Pointer）。OpenAPI に 415 / 422 |
 | 4 | GET が状態を変える。トークンが URL に載る（RFC 9110 §9.2.1、RFC 3986 §7.5） | 済 | `POST /api/auth/verify`、`POST /api/auth/magic-link/verify`（本文にトークン）。メールのリンクは SPA の `/verify#<token>`、`/magic-link#<token>`。旧 GET ルートは削除 |
-| 5 | dev / test の JWT 秘密鍵が 20 バイト（RFC 7518 §3.2） | 済 | 96 バイトに差し替え。`JwtSecretInitializer` が 64 バイト未満の起動を拒否 |
+| 5 | dev / test の JWT 秘密鍵が 20 文字で、base64 デコード後は 15 バイト（RFC 7518 §3.2） | 済 | dev / test は、デコード後 64 バイト以上の、開発専用と分かる繰り返し文字列（development は `JWT_SECRET` で上書き可）。`JwtSecretInitializer` が、デコード後 64 バイト未満・base64 でない鍵での起動を拒否。高エントロピーの本物らしい値をリポジトリに置かない（GitGuardian が検出する） |
 | 6 | トークンを返す応答に `Cache-Control: no-store` がない（RFC 9111 §5.2.2.5） | 済 | ミドルウェアが `/api/auth/` の全応答に付ける |
 | 7 | 許可メールドメインの判定が大文字小文字を区別する（RFC 5321 §2.4） | 済 | `is_allowed_email_domain`（正規表現をやめ、`regex` 依存も削除） |
 | 8 | `register` などが本文 `null` の `200` を返す | 未対応（違反ではない） | `null` は有効な JSON で、RFC 9110 §15.3 に反しない。`202` / `204` への変更は契約の変更になるので、必要が出てからにする |

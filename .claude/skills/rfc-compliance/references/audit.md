@@ -77,7 +77,7 @@ cargo test --test mod zz_rfc_probe -- --nocapture
 
 静的な確認（コードと設定を読む）:
 
-- `config/*.yaml` の `auth.jwt.secret` の長さ（HS512 なら 64 バイト以上）。`config/production.yaml` は `JWT_SECRET` 環境変数なので、デプロイ先の値の長さを確認する。
+- `config/*.yaml` の `auth.jwt.secret` の長さ（base64 をデコードした後で、HS512 なら 64 バイト以上）。`config/production.yaml` は `JWT_SECRET` 環境変数なので、デプロイ先の値の長さを確認する。
 - `auth.jwt.location` が既定（`Authorization: Bearer`）のままか。
 - `GET` に付いたハンドラーで、DB の更新・メール送信・トークン発行をしているものがないか（`routes()` の `.add("...", get(...))` を全部見る）。
 - URL（パス・クエリ）にトークンやパスワードを載せていないか。
