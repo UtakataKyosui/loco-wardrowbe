@@ -89,12 +89,18 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: ${{matrix.node-version}}
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Build frontend
-        run: npm install && npm run build
+        run: pnpm install --frozen-lockfile && pnpm run build
         working-directory: ./frontend
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
