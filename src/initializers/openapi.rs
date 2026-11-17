@@ -76,7 +76,9 @@ impl Modify for SecurityAddon {
         controllers::auth::resend_verification_email,
     ),
     components(schemas(
-        dtos::common::ErrorResponse,
+        dtos::common::ProblemDetails,
+        dtos::common::FieldError,
+        controllers::auth::TokenParams,
         users::LoginParams,
         users::RegisterParams,
         views::auth::LoginResponse,

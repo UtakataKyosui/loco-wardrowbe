@@ -105,8 +105,11 @@ database:
 auth:
   # JWT authentication
   jwt:
-    # Secret key for token generation and verification
-    secret: gg3OcwDnOCh7Rl5Soqsk
+    # Secret key for token generation and verification. Loco decodes it as
+    # standard base64 and signs with HS512, which needs a key of at least 64
+    # bytes after decoding (RFC 7518 §3.2). This default is a development-only
+    # placeholder; `JWT_SECRET` overrides it.
+    secret: <%= get_env(name="JWT_SECRET", default="DevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKey") %>
     # Token expiration time in seconds
     expiration: 604800 # 7 days
     # Where to read the token from. Omitted => `Authorization: Bearer <token>`.

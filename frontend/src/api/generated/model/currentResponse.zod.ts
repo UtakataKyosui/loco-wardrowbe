@@ -10,7 +10,7 @@ import * as zod from 'zod';
 export const CurrentResponse = zod.object({
   "email": zod.string(),
   "name": zod.string(),
-  "pid": zod.string()
+  "pid": zod.uuid().describe('Public identifier of the user (RFC 9562 UUID).')
 })
 
 export type CurrentResponse = zod.input<typeof CurrentResponse>;
