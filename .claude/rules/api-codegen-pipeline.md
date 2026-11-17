@@ -79,8 +79,9 @@ pub struct PostResponse { /* ... */ }
     params(("id" = i32, Path, description = "Post ID")),
     responses(
         (status = 200, description = "Post found", body = PostResponse),
-        (status = 401, description = "Unauthorized", body = ErrorResponse),
-        (status = 404, description = "Post not found", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ProblemDetails, content_type = "application/problem+json",
+            headers(("WWW-Authenticate" = String, description = "Bearer challenge (RFC 6750 §3)"))),
+        (status = 404, description = "Post not found", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 #[debug_handler]
@@ -108,8 +109,8 @@ pub struct ApiDoc;
 - `ApiDoc` の `paths(...)` に載せたハンドラーだけが仕様に出る。載せ忘れるとフロントエンドの生成物から黙って消える。
 - `#[utoipa::path]` の `security(...)` と `tag` は**文字列リテラル**しか受け付けない。定数は使えない。
 - 認証が要るルートには `security(("jwt_token" = []))` を付ける。`jwt_token` は `ApiDoc` の `modifiers(&SecurityAddon)` が登録する Bearer JWT（Loco の既定の JWT 位置）。認証不要のルートは `security` を書かない。JWT の位置を cookie / query に変えたら `SecurityAddon` も合わせる。
-- 共通のエラーボディは `dtos::common::ErrorResponse` をすべてのエラー応答で使う。Loco が実際に返す `{"error": ..., "description": ..., "errors": ...}`（`loco_rs::controller::ErrorDetail`）をそのまま写したもので、Orval が 1 つのスキーマとして生成できる。`dtos::common::ApiError`（`code` / `message`）は Loco の応答と一致しないので OpenAPI には使わない。
-- Axum の JSON 抽出に失敗したときは、不正な JSON が 400、スキーマ不一致が 422 で、どちらも `ErrorResponse` の形で返る。
+- 共通のエラーボディは `dtos::common::ProblemDetails`（RFC 9457）をすべてのエラー応答で使い、媒体型を `content_type = "application/problem+json"` で書く。`initializers::problem_details` のミドルウェアが `/api/` の全エラー応答をこの形に作り替えるので、仕様と実際の応答が一致する。401 には `WWW-Authenticate` のヘッダーも書く。`dtos::common::ApiError`（`code` / `message`）は使わない。
+- Axum の JSON 抽出に失敗したときは、不正な JSON が 400、`Content-Type` の不一致が 415、スキーマ不一致が 422 で、どれも `ProblemDetails` の形で返る。RFC 全般の扱いは `.claude/rules/rfc-compliance.md`。
 - `info(title, description)` は `ApiDoc` に書かれている。アプリの実態に合わせて直す。
 - 外部の型（`sea-orm` のエンティティなど）に `ToSchema` が付けられないときは、レスポンス専用の struct を `src/views/**` に作る。
 - enum が整数でシリアライズされるとき（`serde_repr` など）は、`ToSchema` の既定の出力が文字列になる。`PartialSchema` / `ToSchema` を手で実装して整数型のスキーマを返す。

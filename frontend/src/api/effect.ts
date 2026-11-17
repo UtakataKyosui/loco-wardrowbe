@@ -19,7 +19,8 @@ export type ApiError = HttpError | NetworkError;
 function messageOf(body: unknown, status: number): string {
   if (typeof body === "object" && body !== null) {
     const b = body as Record<string, unknown>;
-    for (const key of ["description", "error", "message"]) {
+    // RFC 9457 `detail` / `title` first, then the pre-RFC shapes.
+    for (const key of ["detail", "title", "description", "error", "message"]) {
       if (typeof b[key] === "string" && b[key]) return b[key] as string;
     }
   }

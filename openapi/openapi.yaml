@@ -22,10 +22,15 @@ paths:
                 $ref: '#/components/schemas/CurrentResponse'
         '401':
           description: Missing or invalid token
-          content:
-            application/json:
+          headers:
+            WWW-Authenticate:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: string
+              description: Bearer challenge (RFC 6750 §3)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
       security:
       - jwt_token: []
   /api/auth/forgot:
@@ -50,15 +55,21 @@ paths:
         '400':
           description: Request body is not valid JSON
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '422':
           description: Request body does not match the schema
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
   /api/auth/login:
     post:
       tags:
@@ -78,12 +89,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Request body is not valid JSON
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '401':
           description: Invalid credentials
-          content:
-            application/json:
+          headers:
+            WWW-Authenticate:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: string
+              description: Bearer challenge (RFC 6750 §3)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
   /api/auth/magic-link:
     post:
       tags:
@@ -97,7 +131,8 @@ paths:
            For security and to avoid exposing whether an email exists, the response always returns 200, even if the email is invalid.
 
         2. **Click the Magic Link**:
-           The user clicks the link (/magic-link/{token}), which validates the token and its expiration.
+           The user clicks the link (`/magic-link#<token>`, a page of the SPA), which posts the token to
+           `/magic-link/verify`; that validates the token and its expiration.
            If valid, the server generates a JWT and responds with a [`LoginResponse`].
            If invalid or expired, an unauthorized response is returned.
 
@@ -115,28 +150,36 @@ paths:
         '400':
           description: Email is not on an allowed domain, or the body is not valid JSON
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '422':
           description: Request body does not match the schema
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/auth/magic-link/{token}:
-    get:
+                $ref: '#/components/schemas/ProblemDetails'
+  /api/auth/magic-link/verify:
+    post:
       tags:
       - auth
       summary: Verifies a magic link token and authenticates the user.
+      description: |-
+        A `POST` for the same reason as [`verify`]: it consumes the one-time token
+        and issues a JWT. The mail links to the SPA page `/magic-link#<token>`.
       operationId: magic_link_verify
-      parameters:
-      - name: token
-        in: path
-        description: One-time magic link token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenParams'
         required: true
-        schema:
-          type: string
       responses:
         '200':
           description: Login succeeded
@@ -144,12 +187,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Request body is not valid JSON
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '401':
           description: Invalid or expired token
-          content:
-            application/json:
+          headers:
+            WWW-Authenticate:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: string
+              description: Bearer challenge (RFC 6750 §3)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
   /api/auth/register:
     post:
       tags:
@@ -170,15 +236,21 @@ paths:
         '400':
           description: Request body is not valid JSON
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '422':
           description: Request body does not match the schema
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
   /api/auth/resend-verification-mail:
     post:
       tags:
@@ -198,15 +270,21 @@ paths:
         '400':
           description: Request body is not valid JSON
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '422':
           description: Request body does not match the schema
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
   /api/auth/reset:
     post:
       tags:
@@ -225,39 +303,73 @@ paths:
         '400':
           description: Request body is not valid JSON
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '422':
           description: Request body does not match the schema
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/auth/verify/{token}:
-    get:
+                $ref: '#/components/schemas/ProblemDetails'
+  /api/auth/verify:
+    post:
       tags:
       - auth
       summary: |-
         Verify register user. if the user not verified his email, he can't login to
         the system.
+      description: |-
+        A `POST`, not a `GET`: it changes the user, and a safe method must not
+        (RFC 9110 §9.2.1). Mail scanners and link previewers fetch `GET` URLs on
+        their own, which would verify (or burn the token of) an address nobody
+        clicked. The mail links to the SPA page `/verify#<token>`, which posts the
+        token here.
       operationId: verify
-      parameters:
-      - name: token
-        in: path
-        description: Email verification token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenParams'
         required: true
-        schema:
-          type: string
       responses:
-        '200':
+        '204':
           description: Email verified (or already verified)
+        '400':
+          description: Request body is not valid JSON
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
         '401':
           description: Invalid token
-          content:
-            application/json:
+          headers:
+            WWW-Authenticate:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: string
+              description: Bearer challenge (RFC 6750 §3)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '415':
+          description: Content-Type is not application/json
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Request body does not match the schema
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
 components:
   schemas:
     CurrentResponse:
@@ -273,26 +385,24 @@ components:
           type: string
         pid:
           type: string
-    ErrorResponse:
+          format: uuid
+          description: Public identifier of the user (RFC 9562 UUID).
+    FieldError:
       type: object
       description: |-
-        The JSON body Loco sends for an error response (`loco_rs::controller::ErrorDetail`).
-
-        This is the `OpenAPI` description of what the server really returns; use it as
-        the `body` of every error response in `#[utoipa::path]`.
+        One invalid field of a validation failure (extension member of
+        [`ProblemDetails`]).
+      required:
+      - pointer
+      - detail
       properties:
-        description:
-          type:
-          - string
-          - 'null'
-          description: Human-readable explanation.
-        error:
-          type:
-          - string
-          - 'null'
-          description: Short error kind, e.g. `unauthorized`.
-        errors:
-          description: Field-level details, present on validation failures.
+        detail:
+          type: string
+          description: What is wrong with the field.
+        pointer:
+          type: string
+          description: JSON Pointer (RFC 6901) to the invalid field of the request body.
+          example: /email
     ForgotParams:
       type: object
       required:
@@ -324,6 +434,8 @@ components:
           type: string
         pid:
           type: string
+          format: uuid
+          description: Public identifier of the user (RFC 9562 UUID).
         token:
           type: string
     MagicLinkParams:
@@ -333,6 +445,58 @@ components:
       properties:
         email:
           type: string
+    ProblemDetails:
+      type: object
+      description: |-
+        An RFC 9457 "problem details" object, the body of every error response of
+        the `/api/` routes (`Content-Type: application/problem+json`).
+
+        It is produced for every error by `initializers::problem_details`, so the
+        `OpenAPI` description matches what the server really sends. Use it as the
+        `body` (with `content_type = "application/problem+json"`) of every error
+        response in `#[utoipa::path]`.
+      required:
+      - type
+      - title
+      - status
+      properties:
+        detail:
+          type:
+          - string
+          - 'null'
+          description: Explanation specific to this occurrence of the problem.
+        errors:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FieldError'
+          description: |-
+            Extension member, present on validation failures: one entry per
+            invalid field.
+        instance:
+          type:
+          - string
+          - 'null'
+          description: |-
+            A URI reference that identifies this occurrence (`urn:uuid:` of the
+            `x-request-id` response header), to find it in the server logs.
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code of the response, repeated for convenience.
+          minimum: 0
+        title:
+          type: string
+          description: |-
+            Short, human-readable summary of the problem type (the HTTP status
+            phrase while `type` is `about:blank`).
+        type:
+          type: string
+          description: |-
+            A URI reference that identifies the problem type. `about:blank` means
+            the problem has no semantics beyond the HTTP status code.
+          example: about:blank
     RegisterParams:
       type: object
       required:
@@ -361,6 +525,18 @@ components:
       properties:
         password:
           type: string
+        token:
+          type: string
+    TokenParams:
+      type: object
+      description: |-
+        The one-time token from an e-mail link (e-mail verification, magic link).
+
+        It travels in the request body, not in the URL, so it stays out of access
+        logs, browser history and `Referer` (RFC 3986 §7.5).
+      required:
+      - token
+      properties:
         token:
           type: string
   securitySchemes:

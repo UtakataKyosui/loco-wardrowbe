@@ -103,7 +103,7 @@ async fn unauthorized_response_carries_a_bearer_challenge() {
 ```
 
 - `res.header(name)` は axum-test の API で、ヘッダーが無いと panic する（このコード片は 2026-11-17 時点でコンパイルできることと、現状の未準拠で落ちることを確認済み）。
-- 現状は未準拠なので、このテストは直すまで落ちる。直す変更と同じ PR に入れる。
+- 未準拠を見つけたら、先にこの形で落ちるテストを書き、直す変更と同じ PR に入れる。実物は `tests/requests/rfc.rs`（`assert_problem!` マクロで、ステータス・媒体型・本文の `status` の一致をまとめて確かめる）。
 
 ## 5. 外部ツール（任意。このリポジトリには未導入、未検証）
 
@@ -112,9 +112,9 @@ async fn unauthorized_response_carries_a_bearer_challenge() {
 
 導入するときは、CI への組み込みを含めて別の変更として扱う。
 
-## 6. 現状の測定値（2026-11-17、Loco 1.3.1）
+## 6. 修正前の測定値（ベースライン。2026-11-17、Loco 1.3.1）
 
-`.claude/rules/rfc-compliance.md` の「未準拠のもの」の元データ。
+`.claude/rules/rfc-compliance.md` の「準拠の状況」の元データ。下の表は **`problem_details` ミドルウェアを入れる前**の、Loco 既定の応答。修正後は `tests/requests/rfc.rs` が現在の挙動を固定している。
 
 | 要求 | ステータス | `content-type` | RFC に関わるヘッダー |
 |---|---|---|---|

@@ -7,7 +7,7 @@
  */
 
 export * from './currentResponse.zod.ts';
-export * from './errorResponse.zod.ts';
+export * from './fieldError.zod.ts';
 export * from './forgotBody.zod.ts';
 export * from './forgotParams.zod.ts';
 export * from './loginBody.zod.ts';
@@ -15,9 +15,13 @@ export * from './loginParams.zod.ts';
 export * from './loginResponse.zod.ts';
 export * from './magicLinkBody.zod.ts';
 export * from './magicLinkParams.zod.ts';
+export * from './magicLinkVerifyBody.zod.ts';
+export * from './problemDetails.zod.ts';
 export * from './registerBody.zod.ts';
 export * from './registerParams.zod.ts';
 export * from './resendVerificationEmailBody.zod.ts';
 export * from './resendVerificationParams.zod.ts';
 export * from './resetBody.zod.ts';
 export * from './resetParams.zod.ts';
+export * from './tokenParams.zod.ts';
+export * from './verifyBody.zod.ts';

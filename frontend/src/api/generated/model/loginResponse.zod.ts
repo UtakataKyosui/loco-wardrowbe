@@ -10,7 +10,7 @@ import * as zod from 'zod';
 export const LoginResponse = zod.object({
   "is_verified": zod.boolean(),
   "name": zod.string(),
-  "pid": zod.string(),
+  "pid": zod.uuid().describe('Public identifier of the user (RFC 9562 UUID).'),
   "token": zod.string()
 })
 

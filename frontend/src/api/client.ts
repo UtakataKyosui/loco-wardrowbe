@@ -1,30 +1,31 @@
-import type { ApiError } from "../bindings/ApiError";
+import type { ProblemDetails } from "./generated/model";
 import { clearToken, getToken } from "../auth/token";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export class ApiClientError extends Error {
   readonly status: number;
-  readonly body: ApiError | null;
+  readonly body: ProblemDetails | null;
 
-  constructor(status: number, body: ApiError | null) {
-    super(body?.message ?? `Request failed with status ${status}`);
+  constructor(status: number, body: ProblemDetails | null) {
+    super(body?.detail ?? body?.title ?? `Request failed with status ${status}`);
     this.name = "ApiClientError";
     this.status = status;
     this.body = body;
   }
 }
 
-async function parseErrorBody(res: Response): Promise<ApiError | null> {
+/** Reads an RFC 9457 `application/problem+json` error body. */
+async function parseErrorBody(res: Response): Promise<ProblemDetails | null> {
   try {
     const data: unknown = await res.json();
     if (
       typeof data === "object" &&
       data !== null &&
-      "code" in data &&
-      "message" in data
+      "title" in data &&
+      "status" in data
     ) {
-      return data as ApiError;
+      return data as ProblemDetails;
     }
     return null;
   } catch {

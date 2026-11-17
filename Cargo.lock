@@ -4317,7 +4317,6 @@ dependencies = [
  "insta",
  "loco-rs",
  "migration",
- "regex",
  "sea-orm",
  "serde",
  "serde_json",
