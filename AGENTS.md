@@ -30,6 +30,10 @@ not, read it directly — it is a normal markdown file.
 3. **Fat model, slim controller.** Domain logic on the model; handlers parse,
    call a model method, and render.
 
+## HTTP API は RFC に従う
+
+ステータス・ヘッダー・エラー本文・トークン・日時・ID を触るときは、`.claude/rules/rfc-compliance.md`（要点と現状の未準拠一覧）と `.claude/skills/rfc-compliance/`（根拠、実装方針、監査手順）に従う。応答は読むだけでなく実測して確かめる。
+
 ## Before you call it done
 
 ```sh
