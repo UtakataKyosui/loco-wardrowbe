@@ -96,11 +96,36 @@ jobs:
           command: clippy
           args: --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms
 
+  frontend:
+    name: Build Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Build frontend
+        run: pnpm install --frozen-lockfile && pnpm run build
+        working-directory: ./frontend
+
   test:
     name: Run Tests
     needs: changes
-    # The test config serves frontend/dist, so frontend changes need a re-run too.
-    if: needs.changes.outputs.rust == 'true' || needs.changes.outputs.frontend == 'true'
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
 
     permissions:
@@ -136,19 +161,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          package_json_file: frontend/package.json
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
-      - name: Build frontend
-        run: pnpm install --frozen-lockfile && pnpm run build
-        working-directory: ./frontend
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
