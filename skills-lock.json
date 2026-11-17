@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "skills": {
+    "react-best-practices": {
+      "source": "Facta-Dev/beautifulreact",
+      "commit": "b8047bec5b00c4813c762927311fb69c225f50e5",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "5a3823ece2f232501348df6e5ee76dc53479486e12d640910e1f4ea65784d629"
+    },
+    "react-port": {
+      "source": "Facta-Dev/beautifulreact",
+      "commit": "b8047bec5b00c4813c762927311fb69c225f50e5",
+      "sourceType": "github",
+      "skillPath": "skills/react-port/SKILL.md",
+      "computedHash": "54b238f2ec85da5f9513a94701760ce845feeeca1c1eec2500cbef38c550db17"
+    },
+    "react-review": {
+      "source": "Facta-Dev/beautifulreact",
+      "commit": "b8047bec5b00c4813c762927311fb69c225f50e5",
+      "sourceType": "github",
+      "skillPath": "skills/react-review/SKILL.md",
+      "computedHash": "fe554bebca456bce5b318605875aa34fbaf477f8d9f4566fabe67d747fae44d5"
+    },
+    "rust-best-practices": {
+      "source": "morganlinton/BeautifulRust",
+      "commit": "b9718436d77ee7bcf17cdcb6aa27628feb95d97a",
+      "sourceType": "github",
+      "skillPath": "skills/rust-best-practices/SKILL.md",
+      "computedHash": "313bea7637531b7f6fe60798bed2108e49594914d4db44e303b7d2312868b3d1"
+    },
+    "rust-port": {
+      "source": "morganlinton/BeautifulRust",
+      "commit": "b9718436d77ee7bcf17cdcb6aa27628feb95d97a",
+      "sourceType": "github",
+      "skillPath": "skills/rust-port/SKILL.md",
+      "computedHash": "b125be23ffeac1c4b67d018282f60acee159a228a83d6aebfc4848dd3d3c2efa"
+    },
+    "rust-review": {
+      "source": "morganlinton/BeautifulRust",
+      "commit": "b9718436d77ee7bcf17cdcb6aa27628feb95d97a",
+      "sourceType": "github",
+      "skillPath": "skills/rust-review/SKILL.md",
+      "computedHash": "a12087e797445bac38dc7c0b3e7441cb515fe7decb31ed983fcf24008c0523c1"
+    }
+  }
+}
