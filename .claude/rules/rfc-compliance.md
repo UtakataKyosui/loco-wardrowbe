@@ -52,7 +52,7 @@ Loco 1.3.1 の既定の挙動と、このアプリの実装を実測した結果
 | 2 | エラー本文が `application/json` の `{"error","description"}`。`application/problem+json` ではない | RFC 9457 | 高 |
 | 3 | 415 / 422 / 不正 JSON の本文がどれも `{"error":"Bad Request"}`（ステータスと本文が食い違う）。OpenAPI にも 415 がない | RFC 9457 §3.1.2、RFC 9110 §15.5.16 / §15.5.21 | 中 |
 | 4 | `GET /api/auth/verify/{token}` と `GET /api/auth/magic-link/{token}` が状態を変える（検証済みへの更新、トークンの消費、JWT の発行）。トークンが URL に載り、ログやリファラーに残る | RFC 9110 §9.2.1、RFC 3986 §7.5 | 高 |
-| 5 | `development.yaml` / `test.yaml` の JWT 秘密鍵が 20 バイト。Loco の既定アルゴリズムは HS512 で、512 ビット（64 バイト）以上が必要 | RFC 7518 §3.2 MUST | 中（本番は `JWT_SECRET` の長さ次第） |
+| 5 | `development.yaml` / `test.yaml` の JWT 秘密鍵が 20 文字。Loco は `auth.jwt.secret` を base64 としてデコードしたものを鍵にするので、実際の鍵は 15 バイト（120 ビット）。Loco の既定アルゴリズムは HS512 で、512 ビット（64 バイト）以上が必要 | RFC 7518 §3.2 MUST | 中（本番は `JWT_SECRET` の長さ次第） |
 | 6 | トークンを返す応答に `Cache-Control: no-store` がない | RFC 9111 §5.2.2.5 | 中 |
 | 7 | 許可メールドメインの正規表現（`controllers/auth.rs`）が大文字小文字を区別する。`x@Gmail.com` が 400 になる | RFC 5321 §2.4、RFC 4343 | 低 |
 | 8 | `register` / `forgot` などが本文 `null` の `200` を返す。受付だけなら `202`、本文なしなら `204` | RFC 9110 §15.3 | 低 |
