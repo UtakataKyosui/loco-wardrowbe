@@ -56,7 +56,7 @@ pub struct ResendVerificationParams {
     ),
 )]
 #[debug_handler]
-pub async fn register(
+pub(crate) async fn register(
     State(ctx): State<AppContext>,
     Json(params): Json<RegisterParams>,
 ) -> Result<Response> {
@@ -97,7 +97,10 @@ pub async fn register(
     ),
 )]
 #[debug_handler]
-pub async fn verify(State(ctx): State<AppContext>, Path(token): Path<String>) -> Result<Response> {
+pub(crate) async fn verify(
+    State(ctx): State<AppContext>,
+    Path(token): Path<String>,
+) -> Result<Response> {
     let Ok(user) = users::Model::find_by_verification_token(&ctx.db, &token).await else {
         return unauthorized("invalid token");
     };
@@ -129,7 +132,7 @@ pub async fn verify(State(ctx): State<AppContext>, Path(token): Path<String>) ->
     ),
 )]
 #[debug_handler]
-pub async fn forgot(
+pub(crate) async fn forgot(
     State(ctx): State<AppContext>,
     Json(params): Json<ForgotParams>,
 ) -> Result<Response> {
@@ -162,7 +165,7 @@ pub async fn forgot(
     ),
 )]
 #[debug_handler]
-pub async fn reset(
+pub(crate) async fn reset(
     State(ctx): State<AppContext>,
     Json(params): Json<ResetParams>,
 ) -> Result<Response> {
@@ -192,7 +195,7 @@ pub async fn reset(
     ),
 )]
 #[debug_handler]
-pub async fn login(
+pub(crate) async fn login(
     State(ctx): State<AppContext>,
     Json(params): Json<LoginParams>,
 ) -> Result<Response> {
@@ -233,7 +236,7 @@ pub async fn login(
     ),
 )]
 #[debug_handler]
-pub async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Response> {
+pub(crate) async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Response> {
     let user = users::Model::find_by_pid(&ctx.db, &auth.claims.pid).await?;
     format::json(CurrentResponse::new(&user))
 }
@@ -263,7 +266,7 @@ pub async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<R
         (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
     ),
 )]
-pub async fn magic_link(
+pub(crate) async fn magic_link(
     State(ctx): State<AppContext>,
     Json(params): Json<MagicLinkParams>,
 ) -> Result<Response> {
@@ -300,7 +303,7 @@ pub async fn magic_link(
         (status = 401, description = "Invalid or expired token", body = ErrorResponse),
     ),
 )]
-pub async fn magic_link_verify(
+pub(crate) async fn magic_link_verify(
     Path(token): Path<String>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
@@ -336,7 +339,7 @@ pub async fn magic_link_verify(
     ),
 )]
 #[debug_handler]
-pub async fn resend_verification_email(
+pub(crate) async fn resend_verification_email(
     State(ctx): State<AppContext>,
     Json(params): Json<ResendVerificationParams>,
 ) -> Result<Response> {

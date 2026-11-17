@@ -51,7 +51,7 @@ pub struct ApiError {
 
 /// The JSON body Loco sends for an error response (`loco_rs::controller::ErrorDetail`).
 ///
-/// This is the OpenAPI description of what the server really returns; use it as
+/// This is the `OpenAPI` description of what the server really returns; use it as
 /// the `body` of every error response in `#[utoipa::path]`.
 #[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
 pub struct ErrorResponse {
