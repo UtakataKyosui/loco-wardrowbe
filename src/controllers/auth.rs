@@ -1,5 +1,5 @@
 use crate::{
-    dtos::common::ErrorResponse,
+    dtos::common::ProblemDetails,
     mailers::auth::AuthMailer,
     models::{
         _entities::users,
@@ -7,18 +7,33 @@ use crate::{
     },
     views::auth::{CurrentResponse, LoginResponse},
 };
+use axum::http::StatusCode;
 use loco_rs::prelude::*;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
 use utoipa::ToSchema;
 
-pub static EMAIL_DOMAIN_RE: OnceLock<Regex> = OnceLock::new();
+/// Domains that may request a magic link.
+const ALLOWED_EMAIL_DOMAINS: [&str; 2] = ["example.com", "gmail.com"];
 
-fn get_allow_email_domain_re() -> &'static Regex {
-    EMAIL_DOMAIN_RE.get_or_init(|| {
-        Regex::new(r"@example\.com$|@gmail\.com$").expect("Failed to compile regex")
+/// Whether the domain of `email` is on the allow-list.
+///
+/// The domain of an address is case-insensitive (RFC 5321 §2.4, RFC 4343), so
+/// `x@Gmail.com` is as allowed as `x@gmail.com`.
+fn is_allowed_email_domain(email: &str) -> bool {
+    email.rsplit_once('@').is_some_and(|(_, domain)| {
+        ALLOWED_EMAIL_DOMAINS
+            .iter()
+            .any(|allowed| allowed.eq_ignore_ascii_case(domain))
     })
+}
+
+/// The one-time token from an e-mail link (e-mail verification, magic link).
+///
+/// It travels in the request body, not in the URL, so it stays out of access
+/// logs, browser history and `Referer` (RFC 3986 §7.5).
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct TokenParams {
+    pub token: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
@@ -51,8 +66,9 @@ pub struct ResendVerificationParams {
     request_body = RegisterParams,
     responses(
         (status = 200, description = "Request accepted. Always 200, even when the email is already taken, so registered emails are not exposed"),
-        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
-        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+        (status = 400, description = "Request body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 #[debug_handler]
@@ -86,22 +102,31 @@ pub(crate) async fn register(
 
 /// Verify register user. if the user not verified his email, he can't login to
 /// the system.
+///
+/// A `POST`, not a `GET`: it changes the user, and a safe method must not
+/// (RFC 9110 §9.2.1). Mail scanners and link previewers fetch `GET` URLs on
+/// their own, which would verify (or burn the token of) an address nobody
+/// clicked. The mail links to the SPA page `/verify#<token>`, which posts the
+/// token here.
 #[utoipa::path(
-    get,
-    path = "/api/auth/verify/{token}",
+    post,
+    path = "/api/auth/verify",
     tag = "auth",
-    params(("token" = String, Path, description = "Email verification token")),
+    request_body = TokenParams,
     responses(
-        (status = 200, description = "Email verified (or already verified)"),
-        (status = 401, description = "Invalid token", body = ErrorResponse),
+        (status = 204, description = "Email verified (or already verified)"),
+        (status = 400, description = "Request body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 401, description = "Invalid token", body = ProblemDetails, content_type = "application/problem+json", headers(("WWW-Authenticate" = String, description = "Bearer challenge (RFC 6750 §3)"))),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 #[debug_handler]
 pub(crate) async fn verify(
     State(ctx): State<AppContext>,
-    Path(token): Path<String>,
+    Json(params): Json<TokenParams>,
 ) -> Result<Response> {
-    let Ok(user) = users::Model::find_by_verification_token(&ctx.db, &token).await else {
+    let Ok(user) = users::Model::find_by_verification_token(&ctx.db, &params.token).await else {
         return unauthorized("invalid token");
     };
 
@@ -113,7 +138,7 @@ pub(crate) async fn verify(
         tracing::info!(pid = user.pid.to_string(), "user verified");
     }
 
-    format::json(())
+    Ok(StatusCode::NO_CONTENT.into_response())
 }
 
 /// In case the user forgot his password  this endpoints generate a forgot token
@@ -127,8 +152,9 @@ pub(crate) async fn verify(
     request_body = ForgotParams,
     responses(
         (status = 200, description = "Request accepted. Always 200, even when the email is unknown"),
-        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
-        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+        (status = 400, description = "Request body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 #[debug_handler]
@@ -160,8 +186,9 @@ pub(crate) async fn forgot(
     request_body = ResetParams,
     responses(
         (status = 200, description = "Request accepted. Always 200, even when the token is unknown"),
-        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
-        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+        (status = 400, description = "Request body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 #[debug_handler]
@@ -191,7 +218,10 @@ pub(crate) async fn reset(
     request_body = LoginParams,
     responses(
         (status = 200, description = "Login succeeded", body = LoginResponse),
-        (status = 401, description = "Invalid credentials", body = ErrorResponse),
+        (status = 400, description = "Request body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 401, description = "Invalid credentials", body = ProblemDetails, content_type = "application/problem+json", headers(("WWW-Authenticate" = String, description = "Bearer challenge (RFC 6750 §3)"))),
     ),
 )]
 #[debug_handler]
@@ -232,7 +262,7 @@ pub(crate) async fn login(
     security(("jwt_token" = [])),
     responses(
         (status = 200, description = "The signed-in user", body = CurrentResponse),
-        (status = 401, description = "Missing or invalid token", body = ErrorResponse),
+        (status = 401, description = "Missing or invalid token", body = ProblemDetails, content_type = "application/problem+json", headers(("WWW-Authenticate" = String, description = "Bearer challenge (RFC 6750 §3)"))),
     ),
 )]
 #[debug_handler]
@@ -250,7 +280,8 @@ pub(crate) async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> R
 ///    For security and to avoid exposing whether an email exists, the response always returns 200, even if the email is invalid.
 ///
 /// 2. **Click the Magic Link**:
-///    The user clicks the link (/magic-link/{token}), which validates the token and its expiration.
+///    The user clicks the link (`/magic-link#<token>`, a page of the SPA), which posts the token to
+///    `/magic-link/verify`; that validates the token and its expiration.
 ///    If valid, the server generates a JWT and responds with a [`LoginResponse`].
 ///    If invalid or expired, an unauthorized response is returned.
 ///
@@ -262,16 +293,16 @@ pub(crate) async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> R
     request_body = MagicLinkParams,
     responses(
         (status = 200, description = "Request accepted. Always 200, even when the email is unknown"),
-        (status = 400, description = "Email is not on an allowed domain, or the body is not valid JSON", body = ErrorResponse),
-        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+        (status = 400, description = "Email is not on an allowed domain, or the body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 pub(crate) async fn magic_link(
     State(ctx): State<AppContext>,
     Json(params): Json<MagicLinkParams>,
 ) -> Result<Response> {
-    let email_regex = get_allow_email_domain_re();
-    if !email_regex.is_match(&params.email) {
+    if !is_allowed_email_domain(&params.email) {
         tracing::debug!(
             email = params.email,
             "The provided email is invalid or does not match the allowed domains"
@@ -293,21 +324,27 @@ pub(crate) async fn magic_link(
 }
 
 /// Verifies a magic link token and authenticates the user.
+///
+/// A `POST` for the same reason as [`verify`]: it consumes the one-time token
+/// and issues a JWT. The mail links to the SPA page `/magic-link#<token>`.
 #[utoipa::path(
-    get,
-    path = "/api/auth/magic-link/{token}",
+    post,
+    path = "/api/auth/magic-link/verify",
     tag = "auth",
-    params(("token" = String, Path, description = "One-time magic link token")),
+    request_body = TokenParams,
     responses(
         (status = 200, description = "Login succeeded", body = LoginResponse),
-        (status = 401, description = "Invalid or expired token", body = ErrorResponse),
+        (status = 400, description = "Request body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 401, description = "Invalid or expired token", body = ProblemDetails, content_type = "application/problem+json", headers(("WWW-Authenticate" = String, description = "Bearer challenge (RFC 6750 §3)"))),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 pub(crate) async fn magic_link_verify(
-    Path(token): Path<String>,
     State(ctx): State<AppContext>,
+    Json(params): Json<TokenParams>,
 ) -> Result<Response> {
-    let Ok(user) = users::Model::find_by_magic_token(&ctx.db, &token).await else {
+    let Ok(user) = users::Model::find_by_magic_token(&ctx.db, &params.token).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
         return unauthorized("unauthorized!");
@@ -334,8 +371,9 @@ pub(crate) async fn magic_link_verify(
     request_body = ResendVerificationParams,
     responses(
         (status = 200, description = "Request accepted"),
-        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
-        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+        (status = 400, description = "Request body is not valid JSON", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 415, description = "Content-Type is not application/json", body = ProblemDetails, content_type = "application/problem+json"),
+        (status = 422, description = "Request body does not match the schema", body = ProblemDetails, content_type = "application/problem+json"),
     ),
 )]
 #[debug_handler]
@@ -374,12 +412,12 @@ pub fn routes() -> Routes {
     Routes::new()
         .prefix("/api/auth")
         .add("/register", post(register))
-        .add("/verify/{token}", get(verify))
+        .add("/verify", post(verify))
         .add("/login", post(login))
         .add("/forgot", post(forgot))
         .add("/reset", post(reset))
         .add("/current", get(current))
         .add("/magic-link", post(magic_link))
-        .add("/magic-link/{token}", get(magic_link_verify))
+        .add("/magic-link/verify", post(magic_link_verify))
         .add("/resend-verification-mail", post(resend_verification_email))
 }

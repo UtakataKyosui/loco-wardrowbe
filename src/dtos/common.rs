@@ -49,16 +49,45 @@ pub struct ApiError {
     pub details: Option<serde_json::Value>,
 }
 
-/// The JSON body Loco sends for an error response (`loco_rs::controller::ErrorDetail`).
+/// An RFC 9457 "problem details" object, the body of every error response of
+/// the `/api/` routes (`Content-Type: application/problem+json`).
 ///
-/// This is the `OpenAPI` description of what the server really returns; use it as
-/// the `body` of every error response in `#[utoipa::path]`.
-#[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
-pub struct ErrorResponse {
-    /// Short error kind, e.g. `unauthorized`.
-    pub error: Option<String>,
-    /// Human-readable explanation.
-    pub description: Option<String>,
-    /// Field-level details, present on validation failures.
-    pub errors: Option<serde_json::Value>,
+/// It is produced for every error by `initializers::problem_details`, so the
+/// `OpenAPI` description matches what the server really sends. Use it as the
+/// `body` (with `content_type = "application/problem+json"`) of every error
+/// response in `#[utoipa::path]`.
+#[derive(Debug, serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
+pub struct ProblemDetails {
+    /// A URI reference that identifies the problem type. `about:blank` means
+    /// the problem has no semantics beyond the HTTP status code.
+    #[serde(rename = "type")]
+    #[schema(rename = "type", example = "about:blank")]
+    pub type_: String,
+    /// Short, human-readable summary of the problem type (the HTTP status
+    /// phrase while `type` is `about:blank`).
+    pub title: String,
+    /// The HTTP status code of the response, repeated for convenience.
+    pub status: u16,
+    /// Explanation specific to this occurrence of the problem.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+    /// A URI reference that identifies this occurrence (`urn:uuid:` of the
+    /// `x-request-id` response header), to find it in the server logs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub instance: Option<String>,
+    /// Extension member, present on validation failures: one entry per
+    /// invalid field.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub errors: Option<Vec<FieldError>>,
+}
+
+/// One invalid field of a validation failure (extension member of
+/// [`ProblemDetails`]).
+#[derive(Debug, serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
+pub struct FieldError {
+    /// JSON Pointer (RFC 6901) to the invalid field of the request body.
+    #[schema(example = "/email")]
+    pub pointer: String,
+    /// What is wrong with the field.
+    pub detail: String,
 }

@@ -104,7 +104,8 @@ async fn can_login_with_verify(test_name: &str, password: &str) {
             .email_verification_token
             .expect("Email verification token should be generated");
         request
-            .get(&format!("/api/auth/verify/{email_verification_token}"))
+            .post("/api/auth/verify")
+            .json(&serde_json::json!({ "token": email_verification_token }))
             .await;
 
         //verify user request
@@ -142,7 +143,6 @@ async fn login_with_un_existing_email() {
     configure_insta!();
 
     request::<App, _, _>(|request, _ctx| async move {
-
         let login_response = request
             .post("/api/auth/login")
             .json(&serde_json::json!({
@@ -151,8 +151,26 @@ async fn login_with_un_existing_email() {
             }))
             .await;
 
-        assert_eq!(login_response.status_code(), 401, "Login request should return 401");
-        login_response.assert_json(&serde_json::json!({"error": "unauthorized", "description": "You do not have permission to access this resource"}));
+        assert_eq!(
+            login_response.status_code(),
+            401,
+            "Login request should return 401"
+        );
+        assert_eq!(
+            login_response.header("content-type"),
+            "application/problem+json"
+        );
+        let problem: serde_json::Value = login_response.json();
+        assert_eq!(problem["type"], "about:blank");
+        assert_eq!(problem["title"], "Unauthorized");
+        assert_eq!(problem["status"], 401);
+        assert_eq!(
+            problem["detail"],
+            "You do not have permission to access this resource"
+        );
+        assert!(problem["instance"]
+            .as_str()
+            .is_some_and(|instance| instance.starts_with("urn:uuid:")));
     })
     .await;
 }
@@ -213,7 +231,10 @@ async fn invalid_verification_token() {
     configure_insta!();
 
     request::<App, _, _>(|request, _ctx| async move {
-        let response = request.get("/api/auth/verify/invalid-token").await;
+        let response = request
+            .post("/api/auth/verify")
+            .json(&serde_json::json!({ "token": "invalid-token" }))
+            .await;
 
         assert_eq!(response.status_code(), 401, "Verify request should reject");
     })
@@ -366,7 +387,8 @@ async fn can_auth_with_magic_link() {
             .magic_link_token
             .expect("Magic link token should be generated");
         let magic_link_response = request
-            .get(&format!("/api/auth/magic-link/{magic_link_token}"))
+            .post("/api/auth/magic-link/verify")
+            .json(&serde_json::json!({ "token": magic_link_token }))
             .await;
         assert_eq!(
             magic_link_response.status_code(),
@@ -409,7 +431,10 @@ async fn can_reject_invalid_magic_link_token() {
     request::<App, _, _>(|request, ctx| async move {
         seed::<App>(&ctx).await.unwrap();
 
-        let magic_link_response = request.get("/api/auth/magic-link/invalid-token").await;
+        let magic_link_response = request
+            .post("/api/auth/magic-link/verify")
+            .json(&serde_json::json!({ "token": "invalid-token" }))
+            .await;
         assert_eq!(
             magic_link_response.status_code(),
             401,
@@ -491,7 +516,10 @@ async fn cannot_resend_email_if_already_verified() {
         // Verify user
         let user = users::Model::find_by_email(&ctx.db, email).await.unwrap();
         if let Some(token) = user.email_verification_token.clone() {
-            request.get(&format!("/api/auth/verify/{token}")).await;
+            request
+                .post("/api/auth/verify")
+                .json(&serde_json::json!({ "token": token }))
+                .await;
         }
 
         // Try resending verification email

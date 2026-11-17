@@ -10,13 +10,14 @@ import {
   LoginResponse
 } from '../model';
 import type {
-  ErrorResponse,
   ForgotParams,
   LoginParams,
   MagicLinkParams,
+  ProblemDetails,
   RegisterParams,
   ResendVerificationParams,
-  ResetParams
+  ResetParams,
+  TokenParams
 } from '../model';
 
 import { customFetch } from '../../mutator.ts';
@@ -47,7 +48,7 @@ export type currentResponse200 = {
 }
 
 export type currentResponse401 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 401
 }
 
@@ -91,19 +92,24 @@ export type forgotResponse200 = {
 }
 
 export type forgotResponse400 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 400
 }
 
+export type forgotResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
 export type forgotResponse422 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 422
 }
 
 export type forgotResponseSuccess = (forgotResponse200) & {
   headers: Headers;
 };
-export type forgotResponseError = (forgotResponse400 | forgotResponse422) & {
+export type forgotResponseError = (forgotResponse400 | forgotResponse415 | forgotResponse422) & {
   headers: Headers;
 };
 
@@ -140,15 +146,30 @@ export type loginResponse200 = {
   status: 200
 }
 
+export type loginResponse400 = {
+  data: ProblemDetails
+  status: 400
+}
+
 export type loginResponse401 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 401
+}
+
+export type loginResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
+export type loginResponse422 = {
+  data: ProblemDetails
+  status: 422
 }
 
 export type loginResponseSuccess = (loginResponse200) & {
   headers: Headers;
 };
-export type loginResponseError = (loginResponse401) & {
+export type loginResponseError = (loginResponse400 | loginResponse401 | loginResponse415 | loginResponse422) & {
   headers: Headers;
 };
 
@@ -184,19 +205,24 @@ export type magicLinkResponse200 = {
 }
 
 export type magicLinkResponse400 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 400
 }
 
+export type magicLinkResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
 export type magicLinkResponse422 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 422
 }
 
 export type magicLinkResponseSuccess = (magicLinkResponse200) & {
   headers: Headers;
 };
-export type magicLinkResponseError = (magicLinkResponse400 | magicLinkResponse422) & {
+export type magicLinkResponseError = (magicLinkResponse400 | magicLinkResponse415 | magicLinkResponse422) & {
   headers: Headers;
 };
 
@@ -218,7 +244,8 @@ export const getMagicLinkUrl = () => {
  *    For security and to avoid exposing whether an email exists, the response always returns 200, even if the email is invalid.
  *
  * 2. **Click the Magic Link**:
- *    The user clicks the link (/magic-link/{token}), which validates the token and its expiration.
+ *    The user clicks the link (`/magic-link#<token>`, a page of the SPA), which posts the token to
+ *    `/magic-link/verify`; that validates the token and its expiration.
  *    If valid, the server generates a JWT and responds with a [`LoginResponse`].
  *    If invalid or expired, an unauthorized response is returned.
  *
@@ -242,39 +269,56 @@ export type magicLinkVerifyResponse200 = {
   status: 200
 }
 
+export type magicLinkVerifyResponse400 = {
+  data: ProblemDetails
+  status: 400
+}
+
 export type magicLinkVerifyResponse401 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 401
+}
+
+export type magicLinkVerifyResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
+export type magicLinkVerifyResponse422 = {
+  data: ProblemDetails
+  status: 422
 }
 
 export type magicLinkVerifyResponseSuccess = (magicLinkVerifyResponse200) & {
   headers: Headers;
 };
-export type magicLinkVerifyResponseError = (magicLinkVerifyResponse401) & {
+export type magicLinkVerifyResponseError = (magicLinkVerifyResponse400 | magicLinkVerifyResponse401 | magicLinkVerifyResponse415 | magicLinkVerifyResponse422) & {
   headers: Headers;
 };
 
 export type magicLinkVerifyResponse = (magicLinkVerifyResponseSuccess | magicLinkVerifyResponseError)
 
-export const getMagicLinkVerifyUrl = (token: string,) => {
+export const getMagicLinkVerifyUrl = () => {
 
 
 
 
-  return `/api/auth/magic-link/${token}`
+  return `/api/auth/magic-link/verify`
 }
 
 /**
+ * A `POST` for the same reason as [`verify`]: it consumes the one-time token
+ * and issues a JWT. The mail links to the SPA page `/magic-link#<token>`.
  * @summary Verifies a magic link token and authenticates the user.
  */
-export const magicLinkVerify = async (token: string, options?: Parameters<typeof customFetch>[1]): Promise<magicLinkVerifyResponse> => {
+export const magicLinkVerify = async (tokenParams: TokenParams, options?: Parameters<typeof customFetch>[1]): Promise<magicLinkVerifyResponse> => {
 
-  return customFetch<magicLinkVerifyResponse>(getMagicLinkVerifyUrl(token),
+  return customFetch<magicLinkVerifyResponse>(getMagicLinkVerifyUrl(),
   {
     ...options,
-    method: 'GET'
-
-    ,
+    method: 'POST',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(tokenParams),
     schema: LoginResponse
   }
 );}
@@ -286,19 +330,24 @@ export type registerResponse200 = {
 }
 
 export type registerResponse400 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 400
 }
 
+export type registerResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
 export type registerResponse422 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 422
 }
 
 export type registerResponseSuccess = (registerResponse200) & {
   headers: Headers;
 };
-export type registerResponseError = (registerResponse400 | registerResponse422) & {
+export type registerResponseError = (registerResponse400 | registerResponse415 | registerResponse422) & {
   headers: Headers;
 };
 
@@ -334,19 +383,24 @@ export type resendVerificationEmailResponse200 = {
 }
 
 export type resendVerificationEmailResponse400 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 400
 }
 
+export type resendVerificationEmailResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
 export type resendVerificationEmailResponse422 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 422
 }
 
 export type resendVerificationEmailResponseSuccess = (resendVerificationEmailResponse200) & {
   headers: Headers;
 };
-export type resendVerificationEmailResponseError = (resendVerificationEmailResponse400 | resendVerificationEmailResponse422) & {
+export type resendVerificationEmailResponseError = (resendVerificationEmailResponse400 | resendVerificationEmailResponse415 | resendVerificationEmailResponse422) & {
   headers: Headers;
 };
 
@@ -382,19 +436,24 @@ export type resetResponse200 = {
 }
 
 export type resetResponse400 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 400
 }
 
+export type resetResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
 export type resetResponse422 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 422
 }
 
 export type resetResponseSuccess = (resetResponse200) & {
   headers: Headers;
 };
-export type resetResponseError = (resetResponse400 | resetResponse422) & {
+export type resetResponseError = (resetResponse400 | resetResponse415 | resetResponse422) & {
   headers: Headers;
 };
 
@@ -423,45 +482,65 @@ export const reset = async (resetParams: ResetParams, options?: Parameters<typeo
 );}
 
 
-export type verifyResponse200 = {
+export type verifyResponse204 = {
   data: void
-  status: 200
+  status: 204
+}
+
+export type verifyResponse400 = {
+  data: ProblemDetails
+  status: 400
 }
 
 export type verifyResponse401 = {
-  data: ErrorResponse
+  data: ProblemDetails
   status: 401
 }
 
-export type verifyResponseSuccess = (verifyResponse200) & {
+export type verifyResponse415 = {
+  data: ProblemDetails
+  status: 415
+}
+
+export type verifyResponse422 = {
+  data: ProblemDetails
+  status: 422
+}
+
+export type verifyResponseSuccess = (verifyResponse204) & {
   headers: Headers;
 };
-export type verifyResponseError = (verifyResponse401) & {
+export type verifyResponseError = (verifyResponse400 | verifyResponse401 | verifyResponse415 | verifyResponse422) & {
   headers: Headers;
 };
 
 export type verifyResponse = (verifyResponseSuccess | verifyResponseError)
 
-export const getVerifyUrl = (token: string,) => {
+export const getVerifyUrl = () => {
 
 
 
 
-  return `/api/auth/verify/${token}`
+  return `/api/auth/verify`
 }
 
 /**
+ * A `POST`, not a `GET`: it changes the user, and a safe method must not
+ * (RFC 9110 §9.2.1). Mail scanners and link previewers fetch `GET` URLs on
+ * their own, which would verify (or burn the token of) an address nobody
+ * clicked. The mail links to the SPA page `/verify#<token>`, which posts the
+ * token here.
  * @summary Verify register user. if the user not verified his email, he can't login to
 the system.
  */
-export const verify = async (token: string, options?: Parameters<typeof customFetch>[1]): Promise<verifyResponse> => {
+export const verify = async (tokenParams: TokenParams, options?: Parameters<typeof customFetch>[1]): Promise<verifyResponse> => {
 
-  return customFetch<verifyResponse>(getVerifyUrl(token),
+  return customFetch<verifyResponse>(getVerifyUrl(),
   {
     ...options,
-    method: 'GET'
-
-
+    method: 'POST',
+    headers: getHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+    body: JSON.stringify(tokenParams)
   }
 );}
 

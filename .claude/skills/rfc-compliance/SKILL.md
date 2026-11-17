@@ -48,7 +48,7 @@ HTTP API の「外から観測できる振る舞い」が、該当する RFC の
 
 ## 現状
 
-2026-11 時点の未準拠 10 件は `.claude/rules/rfc-compliance.md` の末尾の表にある。直したら表から消し、新しく見つけたら足す。
+未準拠の一覧と状態（済 / 未対応）は `.claude/rules/rfc-compliance.md` の「準拠の状況」の表にある。直したら状態を更新し、新しく見つけたら足す。実装の入口は `src/initializers/problem_details.rs`（エラー応答、`WWW-Authenticate`、`Cache-Control`）、`src/initializers/jwt_secret.rs`（鍵長）、固定するテストは `tests/requests/rfc.rs`。
 
 ## このスキルの出所
 

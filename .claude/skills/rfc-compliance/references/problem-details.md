@@ -34,7 +34,11 @@ Loco 1.3.1 の `Error::into_response` は、本文を `loco_rs::controller::Erro
 
 どれも `application/problem+json` ではなく、415 と 422 の本文は 400 の文言になっている（§3.1.2 の「ステータスの一致」の精神にも反する）。本文のない 404 / 405 は RFC 違反ではないが、API としては Problem Details で揃えるほうがクライアントが扱いやすい。
 
-## 実装方針
+## 実装（このアプリ）
+
+`src/initializers/problem_details.rs`（`ProblemDetailsInitializer`）が下の方針を実装している。変換は `problem_from_loco`（純粋関数、ユニットテストあり）、結果の固定は `tests/requests/rfc.rs`。`/api/` 以外（`/api-docs`、`/scalar`、SPA）には触れない。以下は設計の根拠。
+
+### 方針
 
 Loco 1.3.1 には `Error` → 応答の変換を差し替える設定やフックが見当たらない。**全エラー応答を 1 か所で作り替える**。
 
@@ -73,7 +77,7 @@ Loco の `ModelValidationErrors`（`{"email":[{"code":"email","message":"invalid
 
 ## OpenAPI への反映
 
-- `dtos::common::ErrorResponse`（Loco の形）を、Problem Details の形の `ProblemDetails` に置き換える（`type`、`title`、`status`、`detail`、`instance`、`errors`）。`ApiError`（`code` / `message`）は使わない。
+- `dtos::common::ProblemDetails`（`type`、`title`、`status`、`detail`、`instance`、`errors`）が Problem Details の形で、以前の `ErrorResponse`（Loco の形）を置き換えた。`dtos::common::ApiError`（`code` / `message`）は使わない。
 - すべてのエラー応答に、媒体型 `application/problem+json` を書く。`#[utoipa::path(responses((status = 401, body = ProblemDetails, content_type = "application/problem+json", ...)))]`。
 - 401 には `WWW-Authenticate` のヘッダーを書く（`headers(("WWW-Authenticate" = String, description = "..."))`）。
 - 返し得る `415` / `429` を足す。
