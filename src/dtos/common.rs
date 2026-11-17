@@ -48,3 +48,17 @@ pub struct ApiError {
     #[ts(type = "unknown")]
     pub details: Option<serde_json::Value>,
 }
+
+/// The JSON body Loco sends for an error response (`loco_rs::controller::ErrorDetail`).
+///
+/// This is the OpenAPI description of what the server really returns; use it as
+/// the `body` of every error response in `#[utoipa::path]`.
+#[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
+pub struct ErrorResponse {
+    /// Short error kind, e.g. `unauthorized`.
+    pub error: Option<String>,
+    /// Human-readable explanation.
+    pub description: Option<String>,
+    /// Field-level details, present on validation failures.
+    pub errors: Option<serde_json::Value>,
+}

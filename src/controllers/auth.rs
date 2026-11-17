@@ -1,4 +1,5 @@
 use crate::{
+    dtos::common::ErrorResponse,
     mailers::auth::AuthMailer,
     models::{
         _entities::users,
@@ -10,6 +11,7 @@ use loco_rs::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
+use utoipa::ToSchema;
 
 pub static EMAIL_DOMAIN_RE: OnceLock<Regex> = OnceLock::new();
 
@@ -19,31 +21,42 @@ fn get_allow_email_domain_re() -> &'static Regex {
     })
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct ForgotParams {
     pub email: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct ResetParams {
     pub token: String,
     pub password: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct MagicLinkParams {
     pub email: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct ResendVerificationParams {
     pub email: String,
 }
 
 /// Register function creates a new user with the given parameters and sends a
 /// welcome email to the user
+#[utoipa::path(
+    post,
+    path = "/api/auth/register",
+    tag = "auth",
+    request_body = RegisterParams,
+    responses(
+        (status = 200, description = "Request accepted. Always 200, even when the email is already taken, so registered emails are not exposed"),
+        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
+        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+    ),
+)]
 #[debug_handler]
-async fn register(
+pub async fn register(
     State(ctx): State<AppContext>,
     Json(params): Json<RegisterParams>,
 ) -> Result<Response> {
@@ -73,8 +86,18 @@ async fn register(
 
 /// Verify register user. if the user not verified his email, he can't login to
 /// the system.
+#[utoipa::path(
+    get,
+    path = "/api/auth/verify/{token}",
+    tag = "auth",
+    params(("token" = String, Path, description = "Email verification token")),
+    responses(
+        (status = 200, description = "Email verified (or already verified)"),
+        (status = 401, description = "Invalid token", body = ErrorResponse),
+    ),
+)]
 #[debug_handler]
-async fn verify(State(ctx): State<AppContext>, Path(token): Path<String>) -> Result<Response> {
+pub async fn verify(State(ctx): State<AppContext>, Path(token): Path<String>) -> Result<Response> {
     let Ok(user) = users::Model::find_by_verification_token(&ctx.db, &token).await else {
         return unauthorized("invalid token");
     };
@@ -94,8 +117,19 @@ async fn verify(State(ctx): State<AppContext>, Path(token): Path<String>) -> Res
 /// and send email to the user. In case the email not found in our DB, we are
 /// returning a valid request for security reasons (not exposing users DB
 /// list).
+#[utoipa::path(
+    post,
+    path = "/api/auth/forgot",
+    tag = "auth",
+    request_body = ForgotParams,
+    responses(
+        (status = 200, description = "Request accepted. Always 200, even when the email is unknown"),
+        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
+        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+    ),
+)]
 #[debug_handler]
-async fn forgot(
+pub async fn forgot(
     State(ctx): State<AppContext>,
     Json(params): Json<ForgotParams>,
 ) -> Result<Response> {
@@ -116,8 +150,22 @@ async fn forgot(
 }
 
 /// reset user password by the given parameters
+#[utoipa::path(
+    post,
+    path = "/api/auth/reset",
+    tag = "auth",
+    request_body = ResetParams,
+    responses(
+        (status = 200, description = "Request accepted. Always 200, even when the token is unknown"),
+        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
+        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+    ),
+)]
 #[debug_handler]
-async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -> Result<Response> {
+pub async fn reset(
+    State(ctx): State<AppContext>,
+    Json(params): Json<ResetParams>,
+) -> Result<Response> {
     let Ok(user) = users::Model::find_by_reset_token(&ctx.db, &params.token).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
@@ -133,8 +181,21 @@ async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -
 }
 
 /// Creates a user login and returns a token
+#[utoipa::path(
+    post,
+    path = "/api/auth/login",
+    tag = "auth",
+    request_body = LoginParams,
+    responses(
+        (status = 200, description = "Login succeeded", body = LoginResponse),
+        (status = 401, description = "Invalid credentials", body = ErrorResponse),
+    ),
+)]
 #[debug_handler]
-async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -> Result<Response> {
+pub async fn login(
+    State(ctx): State<AppContext>,
+    Json(params): Json<LoginParams>,
+) -> Result<Response> {
     let Ok(user) = users::Model::find_by_email(&ctx.db, &params.email).await else {
         tracing::debug!(
             email = params.email,
@@ -158,8 +219,21 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
     format::json(LoginResponse::new(&user, &token))
 }
 
+/// Returns the signed-in user
+///
+/// Reads the user identified by the JWT in the `Authorization` header.
+#[utoipa::path(
+    get,
+    path = "/api/auth/current",
+    tag = "auth",
+    security(("jwt_token" = [])),
+    responses(
+        (status = 200, description = "The signed-in user", body = CurrentResponse),
+        (status = 401, description = "Missing or invalid token", body = ErrorResponse),
+    ),
+)]
 #[debug_handler]
-async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Response> {
+pub async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Response> {
     let user = users::Model::find_by_pid(&ctx.db, &auth.claims.pid).await?;
     format::json(CurrentResponse::new(&user))
 }
@@ -178,7 +252,18 @@ async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Respo
 ///    If invalid or expired, an unauthorized response is returned.
 ///
 /// This flow enhances security by avoiding traditional passwords and providing a seamless login experience.
-async fn magic_link(
+#[utoipa::path(
+    post,
+    path = "/api/auth/magic-link",
+    tag = "auth",
+    request_body = MagicLinkParams,
+    responses(
+        (status = 200, description = "Request accepted. Always 200, even when the email is unknown"),
+        (status = 400, description = "Email is not on an allowed domain, or the body is not valid JSON", body = ErrorResponse),
+        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+    ),
+)]
+pub async fn magic_link(
     State(ctx): State<AppContext>,
     Json(params): Json<MagicLinkParams>,
 ) -> Result<Response> {
@@ -205,7 +290,17 @@ async fn magic_link(
 }
 
 /// Verifies a magic link token and authenticates the user.
-async fn magic_link_verify(
+#[utoipa::path(
+    get,
+    path = "/api/auth/magic-link/{token}",
+    tag = "auth",
+    params(("token" = String, Path, description = "One-time magic link token")),
+    responses(
+        (status = 200, description = "Login succeeded", body = LoginResponse),
+        (status = 401, description = "Invalid or expired token", body = ErrorResponse),
+    ),
+)]
+pub async fn magic_link_verify(
     Path(token): Path<String>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
@@ -226,8 +321,22 @@ async fn magic_link_verify(
     format::json(LoginResponse::new(&user, &token))
 }
 
+/// Re-sends the verification email
+///
+/// Always answers 200 so registered emails are not exposed.
+#[utoipa::path(
+    post,
+    path = "/api/auth/resend-verification-mail",
+    tag = "auth",
+    request_body = ResendVerificationParams,
+    responses(
+        (status = 200, description = "Request accepted"),
+        (status = 400, description = "Request body is not valid JSON", body = ErrorResponse),
+        (status = 422, description = "Request body does not match the schema", body = ErrorResponse),
+    ),
+)]
 #[debug_handler]
-async fn resend_verification_email(
+pub async fn resend_verification_email(
     State(ctx): State<AppContext>,
     Json(params): Json<ResendVerificationParams>,
 ) -> Result<Response> {
