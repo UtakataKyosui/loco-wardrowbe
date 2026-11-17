@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vp dev",
     "build": "tsc -b && vp build",
-    "preview": "vp preview"
+    "preview": "vp preview",
+    "api:generate": "orval --config orval.config.ts"
   },
   "dependencies": {
     "@tanstack/react-form": "^1.33.5",
@@ -15,6 +16,7 @@
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.5",
     "@utakata-ui/react": "^1.0.0",
+    "effect": "^4.1.4",
     "lism-css": "^1.1.0",
     "react": "^19",
     "react-dom": "^19",
@@ -26,6 +28,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.5",
+    "orval": "^8.48.0",
     "typescript": "^5",
     "vite": "catalog:",
     "vite-plus": "catalog:"
