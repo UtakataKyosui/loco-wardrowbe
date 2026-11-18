@@ -6,12 +6,14 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 ## 0. Cross-cutting findings (global)
 
 **G1. No skip link, and the page shell is not consistent (H, 2.4.1 Bypass Blocks).**
+
 - `routes/__root.tsx:50-60` has no skip link.
 - AppShell uses `<main>` (AppShell/index.tsx:20), `<header>` (TopBar.tsx:6) and `<nav>` (BottomNav.tsx:10), so landmarks exist there.
 - Fix: add `<a class="skip" href="#main">` as the first child of `<body>`. Give `<main id="main" tabIndex={-1}>` to AppShell and AuthCard, and to Home, which has no `<main>` at all (App.tsx:29 renders only a Container).
 - Visually hide the link until `:focus`.
 
 **G2. No focus management and no title change on route change (H, 2.4.2 Page Titled, 2.4.3 Focus Order, 4.1.3 Status Messages).**
+
 - `routes/__root.tsx:20` hardcodes `title: "Wardrowbe"`. None of the 10 `routes/*.tsx` files define `head()`.
 - Fix: add `head: () => ({ meta: [{ title: "ログイン | Wardrowbe" }] })` per route, for example クローゼット, セットアップ, コーデ作成, カレンダー, アイテム詳細, ログイン, 新規登録, メール確認, マジックリンク.
 - Add a `RouteAnnouncer`. In App.tsx, use `useRouterState` on `location.pathname` to focus the page `<h1>` or `<main tabIndex={-1}>` after navigation. Alternatively render a visually hidden `role="status"` element with the new title.
@@ -19,15 +21,15 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 
 **G3. Heading structure is broken on every page (H, 1.3.1, 2.4.6).**
 
-| Page | Problem |
-|---|---|
-| Closet | No heading at all. |
-| Builder | Pages/Builder.tsx:115 uses `Heading level="2"` as the first heading, so there is no h1. |
-| Lookbook | h1 at Lookbook.tsx:26 is fine, then h2 per card (LookCard.tsx:133), which is OK. |
-| Calendar | h1 is the "2026年 11月" date (MonthHeader.tsx:13, with `aria-live` on a heading, see calendar section). Then h2, h2, h2 (MonthGrid:17, SelectedDay:17, LowRotation:12), and an h3 (SelectedDay:42). |
-| ItemDetail | h1 is the brand name (ItemSummary.tsx:21) instead of the item name. Then h2 (ItemSpecs:30, ItemLooks:8). |
-| Home | h1 = "KINFOLK". |
-| Auth pages | h1 per page is fine. |
+| Page       | Problem                                                                                                                                                                                             |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Closet     | No heading at all.                                                                                                                                                                                  |
+| Builder    | Pages/Builder.tsx:115 uses `Heading level="2"` as the first heading, so there is no h1.                                                                                                             |
+| Lookbook   | h1 at Lookbook.tsx:26 is fine, then h2 per card (LookCard.tsx:133), which is OK.                                                                                                                    |
+| Calendar   | h1 is the "2026年 11月" date (MonthHeader.tsx:13, with `aria-live` on a heading, see calendar section). Then h2, h2, h2 (MonthGrid:17, SelectedDay:17, LowRotation:12), and an h3 (SelectedDay:42). |
+| ItemDetail | h1 is the brand name (ItemSummary.tsx:21) instead of the item name. Then h2 (ItemSpecs:30, ItemLooks:8).                                                                                            |
+| Home       | h1 = "KINFOLK".                                                                                                                                                                                     |
+| Auth pages | h1 per page is fine.                                                                                                                                                                                |
 
 - Closet: add a visually hidden `<h1>クローゼット</h1>`. Card titles are h3 (ItemCard.tsx:27), so the h2 level is skipped.
 - Builder: change line 115 to h1.
@@ -38,10 +40,12 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 **G4. Contrast token failures (H/M, 1.4.3, 1.4.11). Full table in section 11.**
 
 **G5. Text sizes of 8-11px are used everywhere (M, 1.4.4 Resize Text, 1.4.12 Text Spacing).**
+
 - Examples: nav labels 9px (theme.css:146), `.c--bld-label` and `.c--bld-chip` 9px, `.c--cal-overlay` 9px, `.c--itemThumbAdd` 8px, many inline `fontSize: 9/10`.
 - This is not a strict fail on its own, but together with the low-contrast tokens it is fragile. Use rem units and a floor of about 11-12px for content text.
 
 **G6. `prefers-reduced-motion` is handled only in lookbook.css:372 (M, 2.3.3, 2.2.2).**
+
 - Un-guarded motion:
   - theme.css:131 nav blur and transform
   - builder.css:17 and :44 `:active` transform
@@ -53,19 +57,26 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - Fix: add a global `@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important } }` in theme.css.
 
 **G7. Global focus-visible style is missing (H, 2.4.7 Focus Visible, 2.4.11 Focus Not Obscured).**
+
 - The only generic rule is item.css:443, scoped to `.c--item`.
 - There is no `:focus-visible` anywhere for any of the following:
   - `.c--navItem`, `.c--iconBtn`, `.c--bld-*`, `.c--cal-*`, `.lb-*`, `.c--chip`, `.c--sortBtn`, `.c--favBtn`, `.c--closetFab`
   - closet search input: closet.css:6 `outline:none` with only a bg/border change at :9 (the border is `--outline-variant`, 1.6:1, so no visible indicator)
   - auth link and plain `<a>`
 - Fix: put this in theme.css (unlayered or in the lism-custom layer):
+
 ```css
-:where(a,button,input,select,textarea,[tabindex]):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 ```
+
 - In dark, accent is #e2c0a3 on #131313 (10.9:1). In light, accent is #944929 on #f9f9f8 (6.1:1). Both are fine.
 - On the primary/accent filled buttons use `outline-color: var(--on-primary)` plus an offset, or a double ring, so the ring does not vanish against a same-colour button background.
 
 **G8. Fixed elements cover content (M, 2.4.11 Focus Not Obscured (Min), 1.4.10 Reflow).**
+
 - BottomNav is fixed: `bottom:12px; height:64px`. The main content padding is `pb="70"`; confirm that value is about 70px or more, as the page can otherwise be covered by the nav.
 - Closet FAB (closet.css:29): `fixed; right:20px; bottom:96px` overlays the last card row and has no `max-width: 28rem` alignment. On a wide viewport it sits at the screen edge, outside the 28rem column.
 - Builder toast (builder.css:140): `fixed; top:80px`.
@@ -77,6 +88,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 **G10. Colour-only state (M, 1.4.1).** See calendar (Sun/Sat colour, worn dot) and the closet favourite button (colour change only on the heart; see the closet section).
 
 ## 1. src/App.tsx
+
 - **L28-39 (H, 1.3.1, 2.4.1):** the non-shell branch has no `<main>`. The Home page, and any auth page except AuthCard, have no main landmark. AuthCard has its own `<main>`, but Home does not.
   - Fix: wrap `<Outlet/>` in a `<main id="main">` here, or in Home.
 - **L30-36 (M, 4.1.2):** the Logout `<nav>` contains only a button and has no label.
@@ -85,13 +97,16 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - The shell branch re-mounts the AppShell on route change inside shell paths only if pathname changes; no problem.
 
 ## 2. src/routes/__root.tsx (G1, G2)
+
 - L20: static title (H).
 - L50-60: add a skip link (H).
 - L26-33: Google Fonts stylesheet with `display=swap`. The Material Symbols font needs `display=block` or a `font-display` fallback so the icon ligature names (e.g. "checkroom") are not shown as text. Icons are `aria-hidden`, so AT is safe, but sighted users see raw ligature text before the font loads (L).
 - Viewport: `width=device-width, initial-scale=1` with no `maximum-scale`, which is good.
 
 ## 3. src/auth/*
+
 **AuthCard.tsx**
+
 - **L11-12 (M, 1.3.1):** `<main>` > `<section>` with no accessible name. Use `<section aria-labelledby="authTitle">` with an id on the h1, or drop the section.
 - **L14 (L):** "Kinfolk" brand text is a `<p>`; fine.
 - **L41-52 AuthField (H, 3.3.1, 3.3.3, 4.1.2):**
@@ -104,6 +119,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - Label is uppercase 11px (auth.css:61-66) at 8.9:1 contrast, fine.
 
 **Login.tsx**
+
 - **L65-69 (M, 4.1.3):** the error `<p role="alert">` is rendered after the `<form>` and is conditionally mounted. `role=alert` works best when the container already exists in the DOM; some screen readers miss alerts injected as the node itself. Keep a persistent empty `<div role="alert">` and fill it.
 - Also place the alert before the submit button and link it with `aria-describedby` on the form, and move focus to the first invalid field or the alert on failure (3.3.1).
 - **L61-63 (M, 4.1.3):** the pending state only swaps the button text and sets `disabled`. A disabled button loses focus, which can strand keyboard users. Use `aria-disabled` or `aria-busy`, and keep focus.
@@ -112,19 +128,23 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - On successful login `navigate({to:"/"})` goes to Home, which then redirects to /closet; focus is not managed (G2).
 
 **Register.tsx**
+
 - Same error, pending and focus issues as Login (L80-84).
 - **L35-47 (M, 4.1.3, 2.4.3):** the success state swaps the whole view without announcing it. The h1 changes to "Check your email". Move focus to the h1 (`tabIndex={-1}`) or put `role="status"` on the text.
 - **L68-75:** no password rules or hint (3.3.2 Labels or Instructions). Add a hint with `aria-describedby` (e.g. minimum length).
 
 **MagicLink.tsx / Verify.tsx**
+
 - **MagicLink L42 and Verify L46 (H, 4.1.3):** the "One moment…" and "Verifying…" status text has no `role="status"` or `aria-live`. Fix: `<p role="status">` or `aria-busy` on the card.
 - Verify L47-54: the success message is not in a live region either, and neither is MagicLink's error alert (L45), which is conditionally mounted.
 - Verify L55-59: the failure state has no recovery link (no "back to login"). Not strictly WCAG, but helpful.
 
 **RequireAuth.tsx**
+
 - L7-9: returns `null` while auth is unknown, which gives a blank page with no status. Render a status message or spinner (`role="status"`). Not currently used in any route (rg found no importer), so this is low.
 
 **auth.css**
+
 - **L92-96 (H, 2.4.7, 1.4.11):** input `:focus-visible { outline:none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(primary 20%) }`. The border change (primary vs outline-variant) is a good indicator in light (black), and dark (#e2c0a3) is OK. The 20% ring is not needed for compliance, but the border colour change from #c4c7c7 to #000 gives about 19:1, which passes. Keep it, but also keep a real outline (`outline: 2px solid transparent` for forced-colors / Windows High Contrast). `outline:none` plus box-shadow disappears in forced-colors mode; use `outline: 2px solid transparent`.
 - L84-86 (M, 1.4.3): placeholder colour `--outline` is 4.05:1 on `--surface-low` in light (#747878 on #f3f4f3) and 4.24 on base. It fails 4.5:1. No placeholders are used in the auth inputs, so this is currently unused; but closet.css:8 uses on-surface-variant, which is fine.
 - L77 input border `--outline-variant` #c4c7c7 on `--surface-low` is about 1.5:1, which fails 1.4.11 (3:1) for input boundaries in light (H/M). The field is bordered only by this colour, so the input boundary is not perceivable by low-vision users. In dark, #4e453d on #1c1b1b is about 1.7:1, which also fails. Fix: use `--outline` for the input border in light (#747878 is about 4.0-4.2:1 on the card, fine) and `--outline` (#9b8e85) in dark (5.4:1 on low).
@@ -133,7 +153,9 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - L133-141: alert is `on-error-container` on `error-container`, 7.2:1 in both modes, good. Add an icon and visible prefix so the error is not colour-only (1.4.1): it is text, so fine.
 
 ## 4. src/components/AppShell
+
 **TopBar.tsx**
+
 - **L16 (M, 2.5.8 / 2.5.5):** icon button "絞り込み" is 44x44 (`.c--iconBtn`), good, and has `aria-label`, but it does nothing (no handler, no expanded state). If it will open a filter panel, add `aria-expanded` and `aria-controls`; if not, remove it, or `disabled`.
 - **L19-30 (H, 1.1.1, 4.1.2):** the profile `Flex` is a `<div>` with `aria-label="プロフィール"` and no role. `aria-label` on a generic div is not announced reliably and is a WAI-ARIA violation (naming prohibited on generic). It is also not interactive. Fix: make it a `<button>` or `<Link>` with an aria-label (and make it 44x44), or use `role="img"` with `aria-label`. If decorative, hide it. The 32x32 size also fails 2.5.8 if it is made interactive: needs a 24px target minimum for AA (2.5.8) and 44px by your own standard.
   - Use `@utakata-ui/react` Avatar inside a Button, or `Avatar.Root` with `Avatar.Fallback`.
@@ -141,6 +163,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L8-13:** "KINFOLK" and subLabel are English. The `subLabel` "Closet" is not conveyed as a page heading. Not a fail.
 
 **BottomNav.tsx**
+
 - L13: `aria-label="メインナビゲーション"` is good.
 - **L25-26 (M, 1.4.1/4.1.2):** `aria-current={active ? "page": undefined}` is correct. TanStack `<Link>` also sets `aria-current` automatically for the active link via `activeProps`, so this is redundant but harmless. Note the `data-active` styling only changes font-weight and colour plus a dot; active-ness is shown by weight/colour only, plus a 4px dot (G: dot is `--accent` on nav bg, 5.6-6.5:1, fine). Make the dot at least 6px and add `font-weight`; fine.
 - **L18-37 (M, 2.5.8, 2.5.5):** `.c--navItem` is 64x48, passes 44px.
@@ -151,17 +174,21 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L21 (L):** no `focus-visible` style (G7).
 
 **AppShell/index.tsx**
+
 - L12-18 `Container isContainer` with `minHeight:100dvh`, `max-w 28rem`. At 320px and 400% zoom, content reflows; OK (1.4.10) as long as horizontal scrollers are inside their own containers (they are, `overflow-x:auto`).
 - L20: `<Group as="main">`: fine, but needs `id="main"` and `tabIndex={-1}` (G1).
 - The TopBar is rendered before `<main>`, so the landmark order is banner, main, nav. Fine.
 
 ## 5. src/components/MaterialIcon.tsx
+
 - L14: `aria-hidden="true"` is applied by default, so icons are decorative. Good. The risk is callers that place a MaterialIcon inside an icon-only control without a label. All current icon-only buttons do have `aria-label`, except the issues noted per file.
 - **L19 (M, 1.1.1, 1.4.5):** the glyph name text (e.g. "chevron_left") is in the DOM; with `aria-hidden` it is not read, but with the font blocked, or in user stylesheets/forced fonts, the raw text appears. Add `translate="no"`, which prevents machine translation from mangling the ligature names, and `font-display: block`.
 - Add an optional `label` prop: when given, set `role="img" aria-label` and drop `aria-hidden`.
 
 ## 6. src/pages/Closet.tsx and components/closet/*
+
 **Closet.tsx**
+
 - **L45-52, L54-62 (M, 4.1.2, 1.3.1):** category chips and sort buttons are `aria-pressed` toggle buttons in `role="group"`.
   - Categories are mutually exclusive, so this is a single-select. Toggle buttons are semantically OK but do not communicate exclusivity. Prefer a RadioGroup or ToggleGroup (single) or Tabs if it filters a panel.
   - Sort buttons: also single choice. Use a `<select>`/NativeSelect or RadioGroup. The icons `expand_more` (i===0) and `tune` (i===2) are arbitrary decoration: i===0 implies a dropdown that is not there. Remove.
@@ -174,6 +201,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L47:** the chip contains `<small>` count; the accessible name is "すべて 24"; fine, but consider `aria-label` with "24件".
 
 **ItemCard.tsx**
+
 - **L9 (M):** `<article>` has no link to the detail page. The card is not clickable or focusable, so keyboard users cannot reach the ItemDetail route (`/closet/$itemId`) from the closet at all. This is a functional a11y gap (2.1.1). Fix: wrap the title in `<Link to="/closet/$itemId">` and give the card a stretched link, with the favourite button positioned above (`z-index`).
 - **L11 (M, 1.1.1):** alt is `${item.brand} ${item.name}`, fine; the heading also repeats the same text, so the image is redundant, and since image and heading are adjacent, use `alt=""` if the card has a text title. Minor.
 - **L12-20 (H, 2.5.8, 2.5.5):** favourite button `.c--favBtn` is 28x28 (closet.css:23) which is below 44px (your standard) but meets the 24px minimum of 2.5.8. Increase to 44px (use a 28px visual with a pseudo-element hit area).
@@ -189,6 +217,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - closet.css:14 chip height 32px and sort button 28px (L17): fails the 44px goal and passes the 24px AA minimum only (2.5.8). Spacing between chips is 4px, so 2.5.8 spacing exception holds. Raise to 44px hit area (M).
 
 ## 7. src/pages/Builder.tsx and components/builder/builder.css
+
 - **L115 (H):** h2 first on the page; make it h1 (G3).
 - **L141-149 (H, 4.1.2):** `builderFilters` buttons (`c--bld-pill`) have no `onClick`, no `aria-pressed`, and `f.active` is shown only via background. They look like toggle chips but do nothing. Either implement them as ToggleGroup items with `aria-pressed`, or remove. `chevron` ones imply a dropdown; add `aria-haspopup`/`aria-expanded` when implemented.
 - **L198-211 (H, 4.1.2, 2.1.1):** `role="tablist"` + `role="tab"` + `aria-selected` is declared, but:
@@ -223,7 +252,9 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - builder.css:23-29, 140-158: the pill rows and toast have no focus ring (G7).
 
 ## 8. src/pages/Lookbook.tsx and components/lookbook/*
+
 **Lookbook.tsx**
+
 - **L39-48 season segment (H, 4.1.2):** two `aria-pressed` buttons in `role="group"` acting as a two-way segmented control. Replace with `ToggleGroup` (type single) or `RadioGroup`. Currently also does nothing: `scope` state is not used to filter `visible`. Also hidden text "SPRING / SUMMER" is fine.
 - **L50-62 occasion pills (M, 4.1.2):** same single-select issue. `aria-pressed` plus a group; fine functionally, but a filter with live-result announce is missing: add `role="status"` count (4.1.3).
 - **L33-36:** `lb-sortChip` is a `<span>` styled like a chip with text "着用頻度順" (looks interactive, is not). Either make it a real control or restyle as static text (3.2.4 consistent identification).
@@ -233,6 +264,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L77:** `o="60"` (opacity .6) on "Kinfolk Archive", colour text-2 ×0.6 over base: effective contrast is about 3.5:1 in light (8.9 blended at 60% towards the background). Compute: roughly `#444748` at 60% over `#f9f9f8` -> approximately #868887, which is about 3.4:1 (M, 1.4.3, fails for large text under 24px; this is 20px "xl" so also fails unless bold). Decorative footer text, but still text. Fix: remove the opacity, use `--outline` (4.2-4.5).
 
 **LookCard.tsx**
+
 - **L99 (L):** `<article>` per card with `<h2>` title; good (2.4.6). Headings in `Heading level="2"` after an `h1`: ok.
 - **L140-154 (M, 4.1.2):** the first card (`look-01`) gets a "その他のオプション" button (`more_horiz`) with no menu or `aria-haspopup`, and other cards get a bookmark toggle labelled "お気に入りに保存" with `aria-pressed`. The label stays constant, which is correct for toggle buttons. The special-casing by `entry.id === "look-01"` is mock logic. Both are 36x36 (lookbook.css:250), below 44px (M, 2.5.5; passes 2.5.8). For `more_horiz` use `DropdownMenu` (`aria-haspopup="menu"`).
 - **L166-180 (M):** `lb-items` button: `aria-label="アイテム N点を見る"` overrides the visible text "アイテム N点" (label-in-name 2.5.3: visible text "アイテム 3点" is contained within "アイテム 3点を見る", so it passes, fine). Inner `<img alt={it.alt}>` is irrelevant, because `aria-label` overrides the content. Set `alt=""` for thumbnails inside a labelled button; they are redundant.
@@ -247,6 +279,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **`.c--lb .lb-tag.is-history`** etc.: fine.
 
 **lookbook.css**
+
 - L19-24 `.c--lb button { border:0; ... }` **no focus style** and removes nothing else; the default focus ring still shows (browser default), because outline is not removed. OK but low-visibility against the primary-coloured buttons (G7).
 - L57-81 segment buttons: height = 16px line + 16px padding = 32px; below 44px (M).
 - L94-107 pills: 32px height (M).
@@ -255,13 +288,16 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - L329 `lb-cta` 48px, good.
 
 ## 9. src/pages/Calendar.tsx and components/calendar/*
+
 **MonthHeader.tsx**
+
 - **L13 (H, 4.1.3, 1.3.1):** `aria-live="polite"` is on the **`<h1>`** that contains "2026年 11月". It works as a month-change announcement, but the h1 is also the page title; each month change re-announces the whole heading text (fine), but with no `aria-atomic`, the announcement can be fragmented across the inline `<Inline>` nodes ("2026", "年", "11", "月"). Add `aria-atomic="true"` or move the live region to a separate `sr-only` `role="status"` element announcing "2026年11月を表示". Also, the page `<h1>` should describe the page ("カレンダー"), with the month as an h2.
 - **L20-22, L31-33 (M, 2.5.8):** previous/next month buttons are `.c--cal-iconbtn` 2rem (32px), below 44px but above 24px. They have `aria-label` ("先月", "来月"), good.
 - **L23-30 (M):** the "今月" button has `aria-label="今月へ戻る"` that differs from the visible "今月". Label-in-name (2.5.3): the visible text "今月" is contained in "今月へ戻る", so this passes. It has inline styles, with `padding: 0 4px` and no explicit height, so it is about 16px high: fails 2.5.8 (24px min) unless it is within the spacing exception; the pillbar buttons are spaced at 4px gaps, so the target (about 30x16px) is below 24px in height. Fix: `min-height:44px; min-width:44px`.
 - calendar.css:33-46 `.c--cal-iconbtn` has no focus style (G7), and colour `on-surface-variant` on `surface-high` 7.6:1, fine.
 
 **MonthGrid.tsx**
+
 - **L40-56 (H, 4.1.2, 1.3.1, 2.1.1):** the day grid is a CSS grid of `<button aria-pressed>` with `aria-label={iso + " 記録あり"}` (e.g. "2026-11-19 記録あり", a raw ISO string). Problems:
   - The label is read as "2026 dash 11 dash 19", poor for SR users, which fails 2.4.6/1.3.1-intent; use a localised date: "11月19日 木曜日、記録あり". It also drops the visible day number from the name only partially (label-in-name 2.5.3: the visible text is "19", and the label "2026-11-19" contains "19" only as a substring of the string, so a speech-control user saying "click 19" may not match). Prefer "19日…".
   - It is a calendar date picker pattern. It is neither a `role="grid"` nor a table, so there is no week/weekday header association: the weekday header row is `aria-hidden` (L32), so the day names are not conveyed per cell (1.3.1). Fix: use the library `Calendar` component from `@utakata-ui/react` (CalendarProps, CalendarLabels), or implement `role="grid"` with `role="columnheader"` and arrow-key navigation. Minimum: include the weekday in each button label.
@@ -275,6 +311,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L19 badge colours:** `on-accent-container` on `accent-soft`: **1.19:1 in dark** (H, 1.4.3). See token fix (section 11).
 
 **AnalyticsCard.tsx**
+
 - **L8 (M):** `<section aria-label=...>` is OK.
 - **L19-33 (H, 1.1.1, 1.4.1/1.3.1):** the progress ring: the `<svg>` is `aria-hidden="true"`, and the percentage appears as visible text "62%" inside the div, followed by the "クローゼット稼働率" text. So the information is available to AT as separate text nodes ("62" "%" then the label, read in the wrong order: value then label, with no association). It is not exposed as a progress or meter. Fix: use `<div role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={utilization} aria-valuetext={`${utilization}%`} aria-labelledby="util-label">` or `Progress` from `@utakata-ui/react` (Progress.Root/Track/Indicator/Value/Label with `ProgressAccessibilityProps`). Group the "N / M 日" values into a `<dl>`.
   - `strokeDasharray` with circumference `2π·15.9155 = 100`, so it is a correct percent ring.
@@ -285,6 +322,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L18:** the `div.c--cal-well` uses surface-lowest vs surface-low: container boundaries are not essential.
 
 **SelectedDay.tsx**
+
 - **L13-14 (M, 4.1.3):** when the user selects a day, the section updates but is not announced (no live region). Add `aria-live="polite"` on the h2 or an `sr-only` status ("11月20日を選択、記録なし").
 - **L17-19 (L):** h2 "11月19日 (木)". Fine; weekday in parentheses read OK.
 - **L20:** "TODAY" label is text; fine (but English in a ja page).
@@ -297,6 +335,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - No `role="status"` on the empty/updated state (M).
 
 **LowRotation.tsx**
+
 - **L21-44 (M, 2.1.1, 1.3.1):** a horizontal scroller (`.c--cal-scroller`, overflow-x:auto) of `div.c--cal-card` containing buttons. A scroll container with focusable content inside is OK (the browser scrolls focused elements into view). It lacks a name and list semantics. Fix: `<ul role="list" aria-label="出番が少ないアイテム">` with `<li>` children; or use `Carousel` (`CarouselLabels`, `CarouselSlide`). Chrome 130+ exposes keyboard-focusable scrollers, but older browsers need `tabIndex={0}` on a scroll container with no focusable children; here there are children, so not required.
   - Scrollbar hidden (`scrollbar-width:none`) so mouse-only desktop users cannot see there is more content (L, 1.3.1/1.4.10).
 - **L35-40 (M):** two small buttons "再提案" and "手放す": `padding: .375rem 0; font 10px` → about 13+12 = 25px high: fails 44px target, borderline 2.5.8 (24px). The "手放す" button has inline colour `--outline` (4.05:1 on `surface-high`?? Compute: outline #747878 on #e8e8e7 is about 3.6:1, fails 4.5:1 for 10px text; H/M, 1.4.3). In dark #9b8e85 on #2a2a2a is about 4.6:1 (ok). Fix: use `--on-surface-variant`.
@@ -307,6 +346,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L18 (L):** `<p style fontSize 14>` is fine.
 
 **calendar.css**
+
 - L63-76: day buttons: `transition: transform` and `:active scale` without reduced-motion (G6).
 - L104-114 `.c--cal-btn` border `outline-variant @60%` and bg `surface-high`: the secondary button boundary is invisible (non-text contrast, 1.4.11): the button's text conveys the control, so OK.
 - L142 `.is-accent` colour primary: fine.
@@ -314,7 +354,9 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - L38-46: the hover style only; no focus (G7).
 
 ## 10. src/pages/ItemDetail.tsx and components/item/*
+
 **ItemDetail.tsx**
+
 - **L25-30 (M, 2.4.1, 4.1.2):** the back link has text "クローゼット" with an icon; OK. It should be inside a breadcrumb or `<nav aria-label="パンくず">`, optional. `c--itemBack` is 44px high, good.
 - **L32-34 (M, 2.5.8):** share button `c--itemRoundBtn` is 40x40, close to 44; `aria-label="共有"`, no handler. Fine.
 - **L35-46 (M, 4.1.2, 4.1.3):** the favourite toggle has `aria-pressed` and a static label; good. The toast fires on toggle.
@@ -325,6 +367,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - No `<h1>` for the item name (G3).
 
 **ItemGallery.tsx**
+
 - **L9, L11 (M, 1.1.1):** the main image `alt={current.alt}` is dynamic; good. When the thumb changes, the change is not announced: add `aria-live="polite"` on a status `Image N / M` or make the counter (`c--itemCounter`, L24-26) `aria-live` (4.1.3). Currently the counter is visual only.
 - **L28-45 (H, 4.1.2):** the thumbnail list: buttons with `aria-label` and **`aria-current={i === index}`**. `aria-current={false}` renders `aria-current="false"` (OK valid), but the semantics are wrong for a selection: `aria-current` is for a current item in a set, and is acceptable, but `aria-pressed` or `role=tab`/`radio` is clearer. Use `RadioGroup` or `Tabs`/`ToggleGroup`. The `<div class="c--itemThumbs">` has no role or label (M).
   - Thumb size 48x56 and a scroll container (`overflow-x:auto`), fine, 44px passes.
@@ -335,6 +378,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L41-44:** `追加` 8px text in 48x56 button (item.css:163 font-size 8px) (M, 1.4.4): too small.
 
 **ItemLooks.tsx**
+
 - **L12 (M, 1.3.1, 2.1.1):** `<a href="/lookbook">` full page reload instead of TanStack `<Link to="/lookbook">` (breaks SPA navigation and loses state; also bypasses router focus handling). Use `Link`. The style is `.c--itemLinkBtn` (min-height 32px; M for 44px).
 - **L16-42 (M, 2.1.1):** the horizontal scroller `.c--itemLooks` holds `div.c--itemLook` cards that are **not focusable and not links**, so keyboard users cannot activate or open a look; the cards look like content cards with no action, fine, but the scroller itself has no focusable content except the CTA, so keyboard users cannot scroll it (2.1.1). In Chromium 130+, scrollers without focusable children are focusable by default, but it is not universal. Fix: `tabIndex={0}` with `role="region" aria-label="このアイテムを使ったルック"`, or make cards links.
   - Looks images `alt={l.title}` with the title also shown as text: redundant.
@@ -343,6 +387,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L43-51 (M, 2.5.3):** CTA button text is split with `<br/>` into "この服で" "コーデを作る" "キャンバスへ移動": the accessible name is a concatenation, fine; the `<br>` renders with no space: "この服で コーデを作る"; fine in Japanese. No handler yet.
 
 **ItemSpecs.tsx**
+
 - **L43-47, 53-58, 63-66, 87-98 (H, 1.3.1, 3.3.2, 4.1.2):** inputs are wrapped in `<label htmlFor>` and are labelled, good. Problems:
   - Inputs have `outline-offset: 4px` and rely on the global `.c--item :focus-visible` (item.css:443). OK: the ring appears (2px accent).
   - The "カテゴリー", "カラー表記", "サイズ区分" fields have decorative `chevron_right`/`expand_more` icons implying a dropdown, but are free text inputs (`appearance:none`; item.css:244-246 lists `select` too). They should be `NativeSelect` or `Select` for category/size. The affordance mismatch is a 3.2.4 problem (L/M).
@@ -361,6 +406,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **L33 and L29-31 (L):** "タップして編集" instruction text is fine.
 
 **ItemSummary.tsx**
+
 - **L21 (H, 3.1, 2.4.6):** h1 = brand name (see G3). The item name is a `Text` (`<p>`).
 - **L24-27 (M):** "変更" `c--itemLinkBtn` button has no handler and a 32px height; its accessible name "変更" is ambiguous out of context (2.4.6): add `aria-label="ブランドを変更"`.
 - **L33-39 chips (L):** plain `span`s: fine. In dark, `c--itemChip.is-accent` uses `on-accent-container` on `accent-soft`: **1.19:1** (H, 1.4.3; item.css:465-468). The text is "コットン100%" style material text at 10px: unreadable in dark mode. See token fix.
@@ -370,6 +416,7 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - **Math (L):** `item.price / item.wearCount` with a zero wearCount gives Infinity; not a11y.
 
 **item.css**
+
 - L16-27: back link 44px, good.
 - L28-41: round button 40px; `aria-pressed` state colour `--accent` on `--surface-container`: 5.58:1 light (accent/cont), 9.6 dark: good; but the state change is a colour change plus the filled icon (`is-fill`), fine.
 - L74-78 glass elements: backdrop-filter; check `prefers-reduced-transparency` (L).
@@ -380,30 +427,32 @@ Ratios were computed from theme.css hex values (WCAG relative luminance). Severi
 - L449-469 dark overrides: `c--itemChip.is-accent` contrast failure; see token fix.
 
 ## 11. src/styles/theme.css: contrast table (computed)
+
 Normal-text threshold is 4.5:1; non-text/UI is 3:1.
 
-| Pair | Light | Dark | Result |
-|---|---|---|---|
-| text on base | 16.25 | 14.42 | pass |
-| on-surface-variant (text-2) on base | 8.90 | 10.92 | pass |
-| on-surface-variant on surface-low / container / high / highest | 8.5 / 8.07 / 7.64 / 7.23 | 10.1 / 9.67 / 8.44 / 7.21 | pass |
-| accent on base | 6.14 | 10.88 | pass |
-| accent on surface-lowest / low / container / high | 6.47 / 5.87 / 5.58 / 5.28 | 11.31 / 10.07 / 9.63 / 8.41 | pass |
-| on-primary on primary | 21.0 | 7.70 | pass |
-| on-accent on accent | 6.47 | 7.70 | pass |
-| primary on surface-low / high | 19.05 / 17.13 | 10.07 / 8.41 | pass |
-| error on base / low / lowest | 6.13 / 5.86 / 6.46 | 10.94 / 10.12 / 11.37 | pass |
-| on-error-container on error-container | 7.24 | 7.24 | pass |
-| inverse-on-surface on inverse-surface | 11.59 | 10.21 | pass |
-| on-accent-container on accent-soft | 7.17 | **1.19** | **FAIL in dark** (H) |
-| on-accent-container on accent-container | 4.57 | 4.55 | pass (marginal; fails for any tint) |
-| accent on accent-soft | 5.02 | 5.49 | pass |
-| outline on base / low / lowest | 4.24 / 4.05 / 4.47 | 5.84 / 5.40 / 6.07 | text on low in light fails 4.5; non-text passes 3:1 |
-| outline-variant on base / low / lowest | 1.62 / 1.54 / 1.70 | 1.98 / 1.84 / 2.06 | **FAIL 1.4.11** if used for control boundaries or icons |
-| surface-highest vs surface-lowest (switch off track) | 1.30 | about 1.5 | **FAIL 1.4.11** |
-| unworn dot (surface-highest) vs surface-low | 1.17 | n/a | decorative, ok |
+| Pair                                                           | Light                     | Dark                        | Result                                                  |
+| -------------------------------------------------------------- | ------------------------- | --------------------------- | ------------------------------------------------------- |
+| text on base                                                   | 16.25                     | 14.42                       | pass                                                    |
+| on-surface-variant (text-2) on base                            | 8.90                      | 10.92                       | pass                                                    |
+| on-surface-variant on surface-low / container / high / highest | 8.5 / 8.07 / 7.64 / 7.23  | 10.1 / 9.67 / 8.44 / 7.21   | pass                                                    |
+| accent on base                                                 | 6.14                      | 10.88                       | pass                                                    |
+| accent on surface-lowest / low / container / high              | 6.47 / 5.87 / 5.58 / 5.28 | 11.31 / 10.07 / 9.63 / 8.41 | pass                                                    |
+| on-primary on primary                                          | 21.0                      | 7.70                        | pass                                                    |
+| on-accent on accent                                            | 6.47                      | 7.70                        | pass                                                    |
+| primary on surface-low / high                                  | 19.05 / 17.13             | 10.07 / 8.41                | pass                                                    |
+| error on base / low / lowest                                   | 6.13 / 5.86 / 6.46        | 10.94 / 10.12 / 11.37       | pass                                                    |
+| on-error-container on error-container                          | 7.24                      | 7.24                        | pass                                                    |
+| inverse-on-surface on inverse-surface                          | 11.59                     | 10.21                       | pass                                                    |
+| on-accent-container on accent-soft                             | 7.17                      | **1.19**                    | **FAIL in dark** (H)                                    |
+| on-accent-container on accent-container                        | 4.57                      | 4.55                        | pass (marginal; fails for any tint)                     |
+| accent on accent-soft                                          | 5.02                      | 5.49                        | pass                                                    |
+| outline on base / low / lowest                                 | 4.24 / 4.05 / 4.47        | 5.84 / 5.40 / 6.07          | text on low in light fails 4.5; non-text passes 3:1     |
+| outline-variant on base / low / lowest                         | 1.62 / 1.54 / 1.70        | 1.98 / 1.84 / 2.06          | **FAIL 1.4.11** if used for control boundaries or icons |
+| surface-highest vs surface-lowest (switch off track)           | 1.30                      | about 1.5                   | **FAIL 1.4.11**                                         |
+| unworn dot (surface-highest) vs surface-low                    | 1.17                      | n/a                         | decorative, ok                                          |
 
 Findings:
+
 1. **(H, 1.4.3) Dark `--on-accent-container` #4d3721 on `--accent-soft` #59422c = 1.19:1.**
    - Affected: `.c--bld-chip.is-accent` (builder.css:72), `.c--itemChip.is-accent` (item.css:186, :465), MonthGrid month badge (MonthGrid.tsx:19, inline), Builder badge (Builder.tsx:154), Builder analysis icon.
    - Lookbook already works around it with an override (lookbook.css:291-296).
@@ -418,63 +467,66 @@ Findings:
 9. **theme.css:97-192 lism-custom layer:** because these rules are in `@layer lism-custom`, any unlayered global focus rule will beat them, which is what you want for G7. But note: layered rules lose to unlayered ones, so the global focus-visible rule must be unlayered or in a later layer.
 
 ## 12. Touch target summary (2.5.8 min 24px; the stated goal 44px)
-| Control | Size | Location |
-|---|---|---|
-| TopBar iconBtn | 44 | ok |
-| Nav items | 64x48 | ok |
-| Profile avatar (if made interactive) | 32 | TopBar.tsx:19-30 |
-| Closet chips | 32 high | closet.css:14 |
-| Closet sort | 28 | closet.css:17 |
-| Fav button (card) | 28 | closet.css:23 |
-| Builder pills | about 28 | builder.css:2-18 |
-| Builder round arrows | 32 (sm 24, line 171 28) | builder.css:30-43 |
-| Builder save/clear | 36 | Builder.tsx:126,134 |
-| Calendar month nav | 32 | calendar.css:33-43 |
-| "今月" | about 16 high | MonthHeader.tsx:27 |
-| Calendar day | about 34 high | calendar.css:63 |
-| LowRotation buttons | about 25 high | calendar.css:135 |
-| Item round buttons | 40 | item.css:28 |
-| Stage buttons | 32 | item.css:100 |
-| Switch | 44x24 | item.css:284 |
-| Season | 32 | item.css:317 |
-| Lookbook seg / pill / iconBtn | 32 / 32 / 36 | lookbook.css |
-| itemLinkBtn | 32 | item.css:198 |
+
+| Control                              | Size                    | Location            |
+| ------------------------------------ | ----------------------- | ------------------- |
+| TopBar iconBtn                       | 44                      | ok                  |
+| Nav items                            | 64x48                   | ok                  |
+| Profile avatar (if made interactive) | 32                      | TopBar.tsx:19-30    |
+| Closet chips                         | 32 high                 | closet.css:14       |
+| Closet sort                          | 28                      | closet.css:17       |
+| Fav button (card)                    | 28                      | closet.css:23       |
+| Builder pills                        | about 28                | builder.css:2-18    |
+| Builder round arrows                 | 32 (sm 24, line 171 28) | builder.css:30-43   |
+| Builder save/clear                   | 36                      | Builder.tsx:126,134 |
+| Calendar month nav                   | 32                      | calendar.css:33-43  |
+| "今月"                               | about 16 high           | MonthHeader.tsx:27  |
+| Calendar day                         | about 34 high           | calendar.css:63     |
+| LowRotation buttons                  | about 25 high           | calendar.css:135    |
+| Item round buttons                   | 40                      | item.css:28         |
+| Stage buttons                        | 32                      | item.css:100        |
+| Switch                               | 44x24                   | item.css:284        |
+| Season                               | 32                      | item.css:317        |
+| Lookbook seg / pill / iconBtn        | 32 / 32 / 36            | lookbook.css        |
+| itemLinkBtn                          | 32                      | item.css:198        |
 
 ## 13. Mapping to @utakata-ui/react (exports checked in node_modules/@utakata-ui/react/dist/index.d.ts)
+
 Available exports: Accordion, Alert, AlertDialog, Avatar, Badge, Breadcrumb, Button, ButtonGroup, Calendar, Card, Carousel, Chart, Checkbox, Collapsible, Combobox, Command, ContextMenu, DatePicker, Dialog, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP, Item, Kbd, Menubar, NativeSelect, NavigationMenu, Pagination, Popover, Progress, RadioGroup, Resizable, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toast (+`useToastManager`), Toggle, ToggleGroup, Tooltip.
 
-| Hand-written part | Replace with | Fixes |
-|---|---|---|
-| auth `AuthField` (AuthCard.tsx:32-54), `c--authField` | `Field` + `Input` (`InputProps`, `InputSize`) | label/description/error association, `aria-invalid`, `aria-describedby`; keep `autoComplete`, add required indicator |
-| `c--authButton`, `c--bld-pill is-primary`, `c--cal-btn`, `c--itemSave`, `lb-cta`, `lb-edit`, `c--closetFab`, `c--itemTextBtn`, `c--itemLinkBtn` | `Button` (`ButtonVariant`/`ButtonSize`; `ButtonAccessibilityProps`) | focus ring, 44px sizes, disabled/loading |
-| icon-only `c--iconBtn`, `c--bld-round`, `c--cal-iconbtn`, `c--itemRoundBtn`, `c--itemStageBtn`, `lb-iconBtn`, `c--favBtn` | `Button` (icon size) with a required accessible-name prop (`ButtonAccessibilityProps`) | enforces aria-label, 44px |
-| Auth/inline error `<p role=alert>` (Login L65, Register L80, MagicLink L45, Verify L56) | `Alert` (`Alert.Root/Title/Description`, `AlertVariant`) | consistent role/live semantics, icon + text |
-| Auth success/info text | `Alert` (info/success variant) or `Empty` | status semantics |
-| Builder toast (Builder.tsx:262) and ItemDetail toast (ItemDetail.tsx:72), `lb-cta` "done" state | `Toast` + `useToastManager` (`Toast.Root/Viewport/Action/Close`) | persistent live region, timeout control, close button (`ToastCloseAccessibilityProps`) |
-| `c--itemSwitch` (ItemSpecs.tsx:114) | `Switch` (`Switch.Root/Thumb`) | switch semantics, contrast tokens, 44px |
-| Season buttons (ItemSpecs.tsx:130), builder filter pills (if multi-select), Lookbook season segment (Lookbook.tsx:39) | `ToggleGroup` (`ToggleGroupItemProps`, `ToggleGroupOrientation`) | grouping, roving focus, pressed/radio semantics |
-| Closet favourite, ItemDetail favourite, LookCard bookmark | `Toggle` (`ToggleProps`, `ToggleVariant/Size`) | `aria-pressed`, size |
-| Closet category chips, sort, Lookbook occasion pills | `ToggleGroup` (single) or `RadioGroup` (`RadioGroup.Root/Item/Indicator`) | exclusive selection semantics |
-| Builder drawer tabs (Builder.tsx:198) | `Tabs` (`Tabs.Root/List/Tab/Panel/Indicator`) | role=tab with arrow keys, `aria-controls`, tabpanel |
-| ItemGallery thumbnails | `Tabs` (panels = images) or `ToggleGroup`/`RadioGroup`; main viewer optionally `Carousel` (`CarouselSlide`, `CarouselLabels`) | selection semantics, keyboard |
-| Builder item cycling (prev/next) | `Carousel` (`CarouselProps`) or keep Buttons plus an `aria-live` region | announce changes |
-| LowRotation and Lookbook horizontal scrollers; closet chip rows | `ScrollArea` (`ScrollAreaProps`) or `Carousel` | focusable scroll region, visible scrollbar |
-| Calendar `MonthGrid` + `MonthHeader` | `Calendar` (`CalendarProps`, `CalendarLabels`, `CalendarDate`, `CalendarMonth`) (and `DatePicker` for entry) | real grid semantics, arrow-key nav, localised labels, `aria-current=date` |
-| `AnalyticsCard` / `ItemSummary` progress rings | `Progress` (`Progress.Root/Track/Indicator/Label/Value`, `ProgressAccessibilityProps`) or `Chart` | value/label exposed to AT (needs ring styling) |
-| Chips/tags/badges (`c--bld-chip`, `c--itemChip`, `lb-chip`, `lb-tag`, `c--cal-chip`, `c--itemTag`, month badge) | `Badge` (`BadgeVariant`) | consistent contrast tokens |
-| TopBar profile blob | `Avatar` (`Avatar.Root/Image/Fallback`, `AvatarSize`) inside `Button` | accessible name, target size |
-| BottomNav, Logout nav | `NavigationMenu` (`NavigationMenuLinkProps`) or keep a plain `<nav>`; note it is more of a top-level menu pattern. For a bottom tab bar a plain `<nav>` with `aria-current` is the correct pattern, and `Sidebar` is not mobile-bottom. Recommendation: keep BottomNav hand-written, just fix labels/focus | n/a |
-| Closet search | `InputGroup` (`InputGroup.Root/Addon/Button`) + `Input` | label, icon addon |
-| Closet / Lookbook empty states | `Empty` (`Empty.Root/Title/Description/Actions`, `EmptyTitleLevel`) | structure and heading level |
-| Item/Look cards | `Card` (`Card.Root/Header/Title/Content/Footer`, `CardTitleLevel`) | article/heading levels |
-| Pending states (`Logging in…`, `Verifying…`, `One moment…`, wear "busy", RequireAuth null) | `Spinner` (`SpinnerAccessibilityProps`) with a label | `role=status` semantics |
-| ItemSpecs free-text fields with chevrons (category/colour/size) | `NativeSelect` or `Select`; others `Input` inside `Field` | affordance + labelling |
-| Item overflow "その他のオプション", "手放す・アーカイブ" | `DropdownMenu`, `AlertDialog` (confirm) | menu semantics, confirmation |
-| Item "アイテム N点を見る" | `Sheet`/`Drawer` when implemented | focus trapping |
-| `c--bld-drawer` (a visual drawer, not an overlay) | stay a section; `Drawer` only if overlay | n/a |
-| Skip link, route announcer, focus-visible globals, reduced-motion | no component; write in theme.css / `__root.tsx` | G1, G2, G6, G7 |
+| Hand-written part                                                                                                                               | Replace with                                                                                                                                                                                                                                                                                               | Fixes                                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| auth `AuthField` (AuthCard.tsx:32-54), `c--authField`                                                                                           | `Field` + `Input` (`InputProps`, `InputSize`)                                                                                                                                                                                                                                                              | label/description/error association, `aria-invalid`, `aria-describedby`; keep `autoComplete`, add required indicator |
+| `c--authButton`, `c--bld-pill is-primary`, `c--cal-btn`, `c--itemSave`, `lb-cta`, `lb-edit`, `c--closetFab`, `c--itemTextBtn`, `c--itemLinkBtn` | `Button` (`ButtonVariant`/`ButtonSize`; `ButtonAccessibilityProps`)                                                                                                                                                                                                                                        | focus ring, 44px sizes, disabled/loading                                                                             |
+| icon-only `c--iconBtn`, `c--bld-round`, `c--cal-iconbtn`, `c--itemRoundBtn`, `c--itemStageBtn`, `lb-iconBtn`, `c--favBtn`                       | `Button` (icon size) with a required accessible-name prop (`ButtonAccessibilityProps`)                                                                                                                                                                                                                     | enforces aria-label, 44px                                                                                            |
+| Auth/inline error `<p role=alert>` (Login L65, Register L80, MagicLink L45, Verify L56)                                                         | `Alert` (`Alert.Root/Title/Description`, `AlertVariant`)                                                                                                                                                                                                                                                   | consistent role/live semantics, icon + text                                                                          |
+| Auth success/info text                                                                                                                          | `Alert` (info/success variant) or `Empty`                                                                                                                                                                                                                                                                  | status semantics                                                                                                     |
+| Builder toast (Builder.tsx:262) and ItemDetail toast (ItemDetail.tsx:72), `lb-cta` "done" state                                                 | `Toast` + `useToastManager` (`Toast.Root/Viewport/Action/Close`)                                                                                                                                                                                                                                           | persistent live region, timeout control, close button (`ToastCloseAccessibilityProps`)                               |
+| `c--itemSwitch` (ItemSpecs.tsx:114)                                                                                                             | `Switch` (`Switch.Root/Thumb`)                                                                                                                                                                                                                                                                             | switch semantics, contrast tokens, 44px                                                                              |
+| Season buttons (ItemSpecs.tsx:130), builder filter pills (if multi-select), Lookbook season segment (Lookbook.tsx:39)                           | `ToggleGroup` (`ToggleGroupItemProps`, `ToggleGroupOrientation`)                                                                                                                                                                                                                                           | grouping, roving focus, pressed/radio semantics                                                                      |
+| Closet favourite, ItemDetail favourite, LookCard bookmark                                                                                       | `Toggle` (`ToggleProps`, `ToggleVariant/Size`)                                                                                                                                                                                                                                                             | `aria-pressed`, size                                                                                                 |
+| Closet category chips, sort, Lookbook occasion pills                                                                                            | `ToggleGroup` (single) or `RadioGroup` (`RadioGroup.Root/Item/Indicator`)                                                                                                                                                                                                                                  | exclusive selection semantics                                                                                        |
+| Builder drawer tabs (Builder.tsx:198)                                                                                                           | `Tabs` (`Tabs.Root/List/Tab/Panel/Indicator`)                                                                                                                                                                                                                                                              | role=tab with arrow keys, `aria-controls`, tabpanel                                                                  |
+| ItemGallery thumbnails                                                                                                                          | `Tabs` (panels = images) or `ToggleGroup`/`RadioGroup`; main viewer optionally `Carousel` (`CarouselSlide`, `CarouselLabels`)                                                                                                                                                                              | selection semantics, keyboard                                                                                        |
+| Builder item cycling (prev/next)                                                                                                                | `Carousel` (`CarouselProps`) or keep Buttons plus an `aria-live` region                                                                                                                                                                                                                                    | announce changes                                                                                                     |
+| LowRotation and Lookbook horizontal scrollers; closet chip rows                                                                                 | `ScrollArea` (`ScrollAreaProps`) or `Carousel`                                                                                                                                                                                                                                                             | focusable scroll region, visible scrollbar                                                                           |
+| Calendar `MonthGrid` + `MonthHeader`                                                                                                            | `Calendar` (`CalendarProps`, `CalendarLabels`, `CalendarDate`, `CalendarMonth`) (and `DatePicker` for entry)                                                                                                                                                                                               | real grid semantics, arrow-key nav, localised labels, `aria-current=date`                                            |
+| `AnalyticsCard` / `ItemSummary` progress rings                                                                                                  | `Progress` (`Progress.Root/Track/Indicator/Label/Value`, `ProgressAccessibilityProps`) or `Chart`                                                                                                                                                                                                          | value/label exposed to AT (needs ring styling)                                                                       |
+| Chips/tags/badges (`c--bld-chip`, `c--itemChip`, `lb-chip`, `lb-tag`, `c--cal-chip`, `c--itemTag`, month badge)                                 | `Badge` (`BadgeVariant`)                                                                                                                                                                                                                                                                                   | consistent contrast tokens                                                                                           |
+| TopBar profile blob                                                                                                                             | `Avatar` (`Avatar.Root/Image/Fallback`, `AvatarSize`) inside `Button`                                                                                                                                                                                                                                      | accessible name, target size                                                                                         |
+| BottomNav, Logout nav                                                                                                                           | `NavigationMenu` (`NavigationMenuLinkProps`) or keep a plain `<nav>`; note it is more of a top-level menu pattern. For a bottom tab bar a plain `<nav>` with `aria-current` is the correct pattern, and `Sidebar` is not mobile-bottom. Recommendation: keep BottomNav hand-written, just fix labels/focus | n/a                                                                                                                  |
+| Closet search                                                                                                                                   | `InputGroup` (`InputGroup.Root/Addon/Button`) + `Input`                                                                                                                                                                                                                                                    | label, icon addon                                                                                                    |
+| Closet / Lookbook empty states                                                                                                                  | `Empty` (`Empty.Root/Title/Description/Actions`, `EmptyTitleLevel`)                                                                                                                                                                                                                                        | structure and heading level                                                                                          |
+| Item/Look cards                                                                                                                                 | `Card` (`Card.Root/Header/Title/Content/Footer`, `CardTitleLevel`)                                                                                                                                                                                                                                         | article/heading levels                                                                                               |
+| Pending states (`Logging in…`, `Verifying…`, `One moment…`, wear "busy", RequireAuth null)                                                      | `Spinner` (`SpinnerAccessibilityProps`) with a label                                                                                                                                                                                                                                                       | `role=status` semantics                                                                                              |
+| ItemSpecs free-text fields with chevrons (category/colour/size)                                                                                 | `NativeSelect` or `Select`; others `Input` inside `Field`                                                                                                                                                                                                                                                  | affordance + labelling                                                                                               |
+| Item overflow "その他のオプション", "手放す・アーカイブ"                                                                                        | `DropdownMenu`, `AlertDialog` (confirm)                                                                                                                                                                                                                                                                    | menu semantics, confirmation                                                                                         |
+| Item "アイテム N点を見る"                                                                                                                       | `Sheet`/`Drawer` when implemented                                                                                                                                                                                                                                                                          | focus trapping                                                                                                       |
+| `c--bld-drawer` (a visual drawer, not an overlay)                                                                                               | stay a section; `Drawer` only if overlay                                                                                                                                                                                                                                                                   | n/a                                                                                                                  |
+| Skip link, route announcer, focus-visible globals, reduced-motion                                                                               | no component; write in theme.css / `__root.tsx`                                                                                                                                                                                                                                                            | G1, G2, G6, G7                                                                                                       |
 
 ## 14. Suggested split for implementers
+
 1. **Global/shell:** `routes/__root.tsx`, `routes/*.tsx` (titles), `App.tsx`, `AppShell/*`, `theme.css` (focus-visible, reduced-motion, contrast tokens, forced-colors, skip link, FAB/toast safe areas), `MaterialIcon.tsx`.
 2. **Auth:** `auth/AuthCard.tsx`, `Login.tsx`, `Register.tsx`, `MagicLink.tsx`, `Verify.tsx`, `auth.css` (Field/Input/Alert/Spinner).
 3. **Closet:** `pages/Closet.tsx`, `closet/ItemCard.tsx`, `closet.css` (headings, list semantics, ToggleGroup/RadioGroup, card links, 44px targets, focus).

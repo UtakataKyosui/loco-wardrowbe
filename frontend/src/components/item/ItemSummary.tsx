@@ -33,7 +33,15 @@ export function ItemSummary({ item }: { item: MockItem }) {
             変更
           </Button>
         </Flex>
-        <Heading level="1" id={`${uid}-title`} fz="s" c="text-2" lts="s" mt="5" className="c--itemName">
+        <Heading
+          level="1"
+          id={`${uid}-title`}
+          fz="s"
+          c="text-2"
+          lts="s"
+          mt="5"
+          className="c--itemName"
+        >
           {item.name}
         </Heading>
         <Flex fxw="wrap" g="10" mt="15">
@@ -94,7 +102,14 @@ export function ItemSummary({ item }: { item: MockItem }) {
                   aria-valuetext={`${item.efficiency}%`}
                 >
                   <g style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}>
-                    <circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--outline-variant)" strokeWidth="4" />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.9155"
+                      fill="none"
+                      stroke="var(--outline-variant)"
+                      strokeWidth="4"
+                    />
                     <circle
                       cx="18"
                       cy="18"

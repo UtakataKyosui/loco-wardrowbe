@@ -10,7 +10,9 @@ export function Closet() {
   const [category, setCategory] = useState<string>("all");
   const [sort, setSort] = useState<string>(sortOptions[0]);
   const [query, setQuery] = useState("");
-  const [favs, setFavs] = useState(() => new Set(closetItems.filter((i) => i.favorite).map((i) => i.id)));
+  const [favs, setFavs] = useState(
+    () => new Set(closetItems.filter((i) => i.favorite).map((i) => i.id)),
+  );
 
   const toggleFav = (id: string) =>
     setFavs((prev) => {
@@ -97,7 +99,10 @@ export function Closet() {
       )}
 
       <Flex ai="center" jc="center" g="10" fz="2xs" c="var(--on-surface-variant)" mt="10" pb="60">
-        <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
+        <span
+          aria-hidden="true"
+          style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }}
+        />
         <span>アーカイブ同期完了・今季{closetTotal}点登録中</span>
       </Flex>
 

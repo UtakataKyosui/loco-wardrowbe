@@ -6,10 +6,34 @@ import { LowRotation } from "../components/calendar/LowRotation";
 import { MonthGrid } from "../components/calendar/MonthGrid";
 import { MonthHeader } from "../components/calendar/MonthHeader";
 import { SelectedDay } from "../components/calendar/SelectedDay";
-import { buildMonthGrid, dateLabel, monthKey, parseIso } from "../components/calendar/calendarUtils";
-import { MOCK_TODAY, calendarOutfits, lowRotationItems, monthAnalytics, wearLogs } from "../mocks/calendar";
+import {
+  buildMonthGrid,
+  dateLabel,
+  monthKey,
+  parseIso,
+} from "../components/calendar/calendarUtils";
+import {
+  MOCK_TODAY,
+  calendarOutfits,
+  lowRotationItems,
+  monthAnalytics,
+  wearLogs,
+} from "../mocks/calendar";
 
-const MONTHS_EN = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+const MONTHS_EN = [
+  "JANUARY",
+  "FEBRUARY",
+  "MARCH",
+  "APRIL",
+  "MAY",
+  "JUNE",
+  "JULY",
+  "AUGUST",
+  "SEPTEMBER",
+  "OCTOBER",
+  "NOVEMBER",
+  "DECEMBER",
+];
 
 export function Calendar() {
   const t = parseIso(MOCK_TODAY);
@@ -41,7 +65,9 @@ export function Calendar() {
   const select = (iso: string) => {
     setSelected(iso);
     setFocusIso(iso);
-    setAnnouncement(`${dateLabel(iso)}を選択、${wearLogs.some((l) => l.date === iso) ? "着用記録あり" : "着用記録なし"}`);
+    setAnnouncement(
+      `${dateLabel(iso)}を選択、${wearLogs.some((l) => l.date === iso) ? "着用記録あり" : "着用記録なし"}`,
+    );
   };
   const focusDate = (iso: string) => {
     const p = parseIso(iso);
@@ -56,7 +82,9 @@ export function Calendar() {
 
   return (
     <Stack g="40">
-      <div role="status" className="u-visually-hidden">{announcement}</div>
+      <div role="status" className="u-visually-hidden">
+        {announcement}
+      </div>
       <MonthHeader
         year={view.year}
         month={view.month}

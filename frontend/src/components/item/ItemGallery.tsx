@@ -21,10 +21,24 @@ export function ItemGallery({ images }: { images: MockItem["images"] }) {
           背景透過・補正済
         </div>
         <div className="c--itemStageActions">
-          <Button iconOnly square variant="ghost" aria-label="撮り直す" className="c--itemGlass c--itemStageBtn" style={iconBtn}>
+          <Button
+            iconOnly
+            square
+            variant="ghost"
+            aria-label="撮り直す"
+            className="c--itemGlass c--itemStageBtn"
+            style={iconBtn}
+          >
             <MaterialIcon name="photo_camera" size={16} />
           </Button>
-          <Button iconOnly square variant="ghost" aria-label="拡大" className="c--itemGlass c--itemStageBtn" style={iconBtn}>
+          <Button
+            iconOnly
+            square
+            variant="ghost"
+            aria-label="拡大"
+            className="c--itemGlass c--itemStageBtn"
+            style={iconBtn}
+          >
             <MaterialIcon name="zoom_in" size={16} />
           </Button>
         </div>

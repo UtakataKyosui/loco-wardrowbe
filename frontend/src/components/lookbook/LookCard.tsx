@@ -17,7 +17,10 @@ function Collage({ entry }: { entry: LookbookEntry }) {
   if (layout === "spread") {
     return (
       <div className="lb-grid is-spread">
-        {tile(0, entry.primaryCaption && <span className="lb-tag9 is-left">{entry.primaryCaption}</span>)}
+        {tile(
+          0,
+          entry.primaryCaption && <span className="lb-tag9 is-left">{entry.primaryCaption}</span>,
+        )}
         <div className="lb-stack">
           {tile(1)}
           {tile(2, entry.countChip && <span className="lb-tag9 is-right">{entry.countChip}</span>)}
@@ -86,9 +89,7 @@ export function LookCard({ entry }: { entry: LookbookEntry }) {
   const logWear = () => {
     if (wear !== "idle") return;
     setWear("busy");
-    timers.current.push(
-      window.setTimeout(() => setWear("done"), 500),
-    );
+    timers.current.push(window.setTimeout(() => setWear("done"), 500));
   };
 
   const wearMessage =
@@ -129,7 +130,10 @@ export function LookCard({ entry }: { entry: LookbookEntry }) {
         <div className="lb-body">
           <Flex jc="between" ai="start" g="10">
             <Card.Header className="lb-head">
-              <span className="lb-label" style={{ color: "var(--on-surface-variant)", textTransform: "uppercase" }}>
+              <span
+                className="lb-label"
+                style={{ color: "var(--on-surface-variant)", textTransform: "uppercase" }}
+              >
                 {entry.style}
               </span>
               <Card.Title level="2" className="lb-title">
@@ -158,7 +162,11 @@ export function LookCard({ entry }: { entry: LookbookEntry }) {
                 onPressedChange={setSaved}
                 style={{ minWidth: 44, minHeight: 44 }}
               >
-                <MaterialIcon name={saved ? "bookmark" : "bookmark_border"} filled={saved} size={20} />
+                <MaterialIcon
+                  name={saved ? "bookmark" : "bookmark_border"}
+                  filled={saved}
+                  size={20}
+                />
               </Toggle>
             )}
           </Flex>
@@ -166,7 +174,11 @@ export function LookCard({ entry }: { entry: LookbookEntry }) {
           <Card.Content className="lb-content">
             <div className="lb-tags">
               {entry.tags.map((t) => (
-                <Badge key={t.label} variant="subtle" className={`lb-tag lb-label is-${t.kind ?? "plain"}`}>
+                <Badge
+                  key={t.label}
+                  variant="subtle"
+                  className={`lb-tag lb-label is-${t.kind ?? "plain"}`}
+                >
                   {t.kind === "history" && (
                     <MaterialIcon name="history" size={13} style={{ color: "var(--accent)" }} />
                   )}
@@ -184,11 +196,19 @@ export function LookCard({ entry }: { entry: LookbookEntry }) {
                     </div>
                   ))}
                 </div>
-                <span className="lb-label" style={{ fontWeight: 500, paddingLeft: 4, color: "var(--on-surface)" }}>
-                  アイテム {entry.items.length}点<span className="u-visually-hidden">を見る: {entry.title}</span>
+                <span
+                  className="lb-label"
+                  style={{ fontWeight: 500, paddingLeft: 4, color: "var(--on-surface)" }}
+                >
+                  アイテム {entry.items.length}点
+                  <span className="u-visually-hidden">を見る: {entry.title}</span>
                 </span>
               </Flex>
-              <MaterialIcon name="chevron_right" size={18} style={{ color: "var(--on-surface-variant)" }} />
+              <MaterialIcon
+                name="chevron_right"
+                size={18}
+                style={{ color: "var(--on-surface-variant)" }}
+              />
             </Button>
           </Card.Content>
 
@@ -199,7 +219,11 @@ export function LookCard({ entry }: { entry: LookbookEntry }) {
               disabled={wear !== "idle"}
               focusableWhenDisabled
             >
-              <MaterialIcon name={wear === "idle" ? "checkroom" : wear === "busy" ? "refresh" : "done"} size={18} className={wear === "busy" ? "lb-spin" : undefined} />
+              <MaterialIcon
+                name={wear === "idle" ? "checkroom" : wear === "busy" ? "refresh" : "done"}
+                size={18}
+                className={wear === "busy" ? "lb-spin" : undefined}
+              />
               <span>
                 このコーデを着る (ログ)<span className="u-visually-hidden">: {entry.title}</span>
               </span>

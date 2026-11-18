@@ -152,7 +152,9 @@
     color: var(--on-primary);
     font-weight: 700;
     border-radius: 0.75rem;
-    box-shadow: var(--shadow-card), 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent);
   }
   .c--cal-day.is-selected .c--cal-dot {
     background: var(--on-primary);

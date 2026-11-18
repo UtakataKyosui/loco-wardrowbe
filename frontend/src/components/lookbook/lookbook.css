@@ -237,7 +237,12 @@
     position: absolute;
     inset: 0;
     /* Dense at the bottom so white overlay text stays >= 4.5:1 over any photo (light and dark). */
-    background: linear-gradient(to top, rgb(0 0 0 / 0.78) 0%, rgb(0 0 0 / 0.62) 32%, transparent 78%);
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.78) 0%,
+      rgb(0 0 0 / 0.62) 32%,
+      transparent 78%
+    );
   }
   .c--lb .lb-overlay {
     position: absolute;

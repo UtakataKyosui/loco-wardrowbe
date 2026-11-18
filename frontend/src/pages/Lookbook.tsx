@@ -17,7 +17,9 @@ export function Lookbook() {
   const [occasion, setOccasion] = useState<OccasionKey>("all");
 
   const visible = LOOKBOOK_ENTRIES.filter(
-    (e) => (occasion === "all" || e.occasion === occasion) && (scope === null || e.seasons.includes(scope)),
+    (e) =>
+      (occasion === "all" || e.occasion === occasion) &&
+      (scope === null || e.seasons.includes(scope)),
   );
 
   return (
@@ -26,7 +28,11 @@ export function Lookbook() {
         <Stack>
           <span
             className="lb-label"
-            style={{ color: "var(--on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.12em" }}
+            style={{
+              color: "var(--on-surface-variant)",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+            }}
           >
             Archival Lookbook
           </span>
@@ -93,7 +99,14 @@ export function Lookbook() {
         </Empty.Root>
       )}
 
-      <Flex fxd="column" ai="center" jc="center" g="10" ta="center" style={{ marginTop: 40, marginBottom: 16 }}>
+      <Flex
+        fxd="column"
+        ai="center"
+        jc="center"
+        g="10"
+        ta="center"
+        style={{ marginTop: 40, marginBottom: 16 }}
+      >
         <div
           aria-hidden="true"
           style={{ width: 32, height: 2, borderRadius: 9999, background: "var(--outline-variant)" }}
@@ -103,7 +116,11 @@ export function Lookbook() {
         </Text>
         <span
           className="lb-label"
-          style={{ color: "var(--on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.06em" }}
+          style={{
+            color: "var(--on-surface-variant)",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
         >
           全24件のコーディネートが同期完了しています
         </span>

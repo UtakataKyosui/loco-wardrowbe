@@ -24,9 +24,7 @@ export function Register() {
       await post<null>("/api/auth/register", { name, email, password });
       setIsDone(true);
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : "Failed to register",
-      );
+      setError(err instanceof ApiClientError ? err.message : "Failed to register");
     } finally {
       setIsPending(false);
     }
@@ -36,8 +34,8 @@ export function Register() {
     return (
       <AuthCard title="Check your email">
         <p className="c--authText">
-          If that address is available, a verification link is on its way. You
-          need to verify before you can log in.
+          If that address is available, a verification link is on its way. You need to verify before
+          you can log in.
         </p>
         <p className="c--authFooter">
           <Link to="/login">Back to log in</Link>

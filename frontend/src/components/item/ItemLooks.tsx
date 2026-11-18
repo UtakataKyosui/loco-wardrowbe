@@ -5,7 +5,10 @@ import type { MockItem } from "../../mocks/item";
 
 export function ItemLooks({ looks }: { looks: MockItem["looks"] }) {
   return (
-    <section aria-labelledby="item-looks-h" style={{ display: "flex", flexDirection: "column", marginBottom: 32 }}>
+    <section
+      aria-labelledby="item-looks-h"
+      style={{ display: "flex", flexDirection: "column", marginBottom: 32 }}
+    >
       <div className="c--itemRow" style={{ marginBottom: 12 }}>
         <h2
           id="item-looks-h"
@@ -48,7 +51,10 @@ export function ItemLooks({ looks }: { looks: MockItem["looks"] }) {
           </div>
         ))}
         <Button type="button" variant="ghost" className="c--itemLookCta">
-          <span className="c--itemIconCircle" style={{ width: 40, height: 40, background: "var(--surface-lowest)", marginBottom: 8 }}>
+          <span
+            className="c--itemIconCircle"
+            style={{ width: 40, height: 40, background: "var(--surface-lowest)", marginBottom: 8 }}
+          >
             <MaterialIcon name="auto_fix_high" size={20} />
           </span>
           この服で

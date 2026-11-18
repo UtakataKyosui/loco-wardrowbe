@@ -66,9 +66,9 @@ const ClosetIndexRoute = ClosetIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClosetItemIdRoute = ClosetItemIdRouteImport.update({
-  id: '/closet/$itemId',
-  path: '/closet/$itemId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$itemId',
+  path: '/$itemId',
+  getParentRoute: () => ClosetRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -156,7 +156,6 @@ export interface RootRouteChildren {
   MagicLinkRoute: typeof MagicLinkRoute
   RegisterRoute: typeof RegisterRoute
   VerifyRoute: typeof VerifyRoute
-  ClosetItemIdRoute: typeof ClosetItemIdRoute
   ClosetIndexRoute: typeof ClosetIndexRoute
 }
 
@@ -227,10 +226,10 @@ declare module '@tanstack/react-router' {
     }
     '/closet/$itemId': {
       id: '/closet/$itemId'
-      path: '/closet/$itemId'
+      path: '/$itemId'
       fullPath: '/closet/$itemId'
       preLoaderRoute: typeof ClosetItemIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ClosetRoute
     }
   }
 }
@@ -244,7 +243,6 @@ const rootRouteChildren: RootRouteChildren = {
   MagicLinkRoute: MagicLinkRoute,
   RegisterRoute: RegisterRoute,
   VerifyRoute: VerifyRoute,
-  ClosetItemIdRoute: ClosetItemIdRoute,
   ClosetIndexRoute: ClosetIndexRoute,
 }
 export const routeTree = rootRouteImport

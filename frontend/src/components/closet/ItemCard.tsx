@@ -33,7 +33,11 @@ export function ItemCard({ item, onToggleFavorite }: Props) {
         )}
       </div>
       <Box p="20" pt="15">
-        <Text className="c--itemMeta" tt="uppercase" css={{ overflow: "hidden", textOverflow: "ellipsis", overflowWrap: "anywhere" }}>
+        <Text
+          className="c--itemMeta"
+          tt="uppercase"
+          css={{ overflow: "hidden", textOverflow: "ellipsis", overflowWrap: "anywhere" }}
+        >
           {item.brand}
         </Text>
         <Heading level="3" fz="s" fw="500" mt="5" css={{ overflowWrap: "anywhere" }}>
@@ -43,7 +47,9 @@ export function ItemCard({ item, onToggleFavorite }: Props) {
         </Heading>
         <Flex ai="center" jc="between" mt="20" g="10">
           <span className="c--itemMeta">{item.color}</span>
-          <span className={`c--wear${item.wearCount >= 14 ? " is-hot" : ""}`}>{item.wearCount}回着用</span>
+          <span className={`c--wear${item.wearCount >= 14 ? " is-hot" : ""}`}>
+            {item.wearCount}回着用
+          </span>
         </Flex>
       </Box>
     </Box>

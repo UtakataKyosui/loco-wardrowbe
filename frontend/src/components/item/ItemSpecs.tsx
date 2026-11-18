@@ -23,7 +23,9 @@ export function ItemSpecs({ item, onToast }: Props) {
   const [purchasedAt, setPurchasedAt] = useState(item.purchasedAt);
   const [price, setPrice] = useState(String(item.price));
   const [cleaning, setCleaning] = useState(false);
-  const [seasons, setSeasons] = useState<string[]>(() => item.seasons.filter((s) => s.on).map((s) => s.key));
+  const [seasons, setSeasons] = useState<string[]>(() =>
+    item.seasons.filter((s) => s.on).map((s) => s.key),
+  );
 
   return (
     <section
@@ -59,7 +61,12 @@ export function ItemSpecs({ item, onToast }: Props) {
         <div className="c--itemTile">
           <Field.Root name="color" className="c--itemField">
             <Field.Label className="c--itemMicro">
-              <span className="c--itemDot" style={{ background: item.colorHex }} aria-hidden="true" /> カラー表記
+              <span
+                className="c--itemDot"
+                style={{ background: item.colorHex }}
+                aria-hidden="true"
+              />{" "}
+              カラー表記
             </Field.Label>
             <NativeSelect value={color} onChange={(e) => setColor(e.target.value)}>
               {COLORS.map((c) => (
@@ -89,7 +96,9 @@ export function ItemSpecs({ item, onToast }: Props) {
           <h3 className="c--itemMicro" style={{ margin: 0, fontWeight: 400 }}>
             素材構成 &amp; ケアガイド
           </h3>
-          <span style={{ fontSize: 12, fontWeight: 500, color: "var(--accent)" }}>{item.material}</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: "var(--accent)" }}>
+            {item.material}
+          </span>
         </div>
         <ul className="c--itemCareList" aria-label="ケア表示">
           {item.care.map((c) => (
@@ -124,10 +133,17 @@ export function ItemSpecs({ item, onToast }: Props) {
       </div>
 
       <Field.Root name="cleaning" className="c--itemTile c--itemSwitchRow">
-        <MaterialIcon name="local_laundry_service" size={20} style={{ color: "var(--on-surface-variant)" }} />
+        <MaterialIcon
+          name="local_laundry_service"
+          size={20}
+          style={{ color: "var(--on-surface-variant)" }}
+        />
         <span className="c--itemSwitchText">
           <Field.Label className="c--itemSwitchLabel">現在クリーニング預け中</Field.Label>
-          <Field.Description className="c--itemMicro" style={{ textTransform: "none", letterSpacing: 0 }}>
+          <Field.Description
+            className="c--itemMicro"
+            style={{ textTransform: "none", letterSpacing: 0 }}
+          >
             コーデ生成候補から一時的に除外されます
           </Field.Description>
         </span>
@@ -154,7 +170,12 @@ export function ItemSpecs({ item, onToast }: Props) {
           onValueChange={setSeasons}
         >
           {item.seasons.map((s) => (
-            <ToggleGroup.Item key={s.key} value={s.key} disabled={s.disabled} className="c--itemSeason">
+            <ToggleGroup.Item
+              key={s.key}
+              value={s.key}
+              disabled={s.disabled}
+              className="c--itemSeason"
+            >
               {s.label}
             </ToggleGroup.Item>
           ))}

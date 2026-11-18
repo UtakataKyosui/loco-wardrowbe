@@ -30,7 +30,9 @@ export function Builder() {
   const [toast, setToast] = useState<string | null>(null);
   const [toastSilent, setToastSilent] = useState(false);
   const [announce, setAnnounce] = useState("");
-  const [filters, setFilters] = useState<string[]>(builderFilters.filter((f) => f.active).map((f) => f.label));
+  const [filters, setFilters] = useState<string[]>(
+    builderFilters.filter((f) => f.active).map((f) => f.label),
+  );
   const timer = useRef<number | undefined>(undefined);
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
@@ -47,7 +49,8 @@ export function Builder() {
     setAnnounce(`${slotLabel[slot]}: ${item.name}を選択`);
   };
 
-  const current = (slot: BuilderSlot) => builderItems.find((i) => i.id === sel[slot]) ?? slotItems(slot)[0];
+  const current = (slot: BuilderSlot) =>
+    builderItems.find((i) => i.id === sel[slot]) ?? slotItems(slot)[0];
   const cycle = (slot: BuilderSlot, dir: number) => {
     const list = slotItems(slot);
     const idx = list.findIndex((i) => i.id === sel[slot]);
@@ -67,7 +70,15 @@ export function Builder() {
         )}
       </Flex>
       <Flex ai="center" jc="between" g="10" style={{ minHeight: 144 }}>
-        <Button iconOnly square variant="ghost" aria-label={`${slotLabel[slot]}を前へ`} className="c--bld-round" style={roundBtn} onClick={() => cycle(slot, -1)}>
+        <Button
+          iconOnly
+          square
+          variant="ghost"
+          aria-label={`${slotLabel[slot]}を前へ`}
+          className="c--bld-round"
+          style={roundBtn}
+          onClick={() => cycle(slot, -1)}
+        >
           <MaterialIcon name="chevron_left" size={18} />
         </Button>
         <Flex ai="center" g="20" style={{ flex: 1, minWidth: 0 }}>
@@ -93,7 +104,15 @@ export function Builder() {
             </Flex>
           </Stack>
         </Flex>
-        <Button iconOnly square variant="ghost" aria-label={`${slotLabel[slot]}を次へ`} className="c--bld-round" style={roundBtn} onClick={() => cycle(slot, 1)}>
+        <Button
+          iconOnly
+          square
+          variant="ghost"
+          aria-label={`${slotLabel[slot]}を次へ`}
+          className="c--bld-round"
+          style={roundBtn}
+          onClick={() => cycle(slot, 1)}
+        >
           <MaterialIcon name="chevron_right" size={18} />
         </Button>
       </Flex>
@@ -103,10 +122,22 @@ export function Builder() {
   const smallCard = (slot: "shoes" | "accessories", item: BuilderItem, label: string) => (
     <div className="c--bld-card" style={{ minWidth: 0 }} role="group" aria-label={slotLabel[slot]}>
       <Flex ai="center" jc="between">
-        <span className="c--bld-label" style={{ color: "var(--on-surface-variant)" }} aria-hidden="true">
+        <span
+          className="c--bld-label"
+          style={{ color: "var(--on-surface-variant)" }}
+          aria-hidden="true"
+        >
           {label}
         </span>
-        <Button iconOnly square variant="ghost" aria-label={`${slotLabel[slot]}を次へ`} className="c--bld-round is-sm" style={roundBtn} onClick={() => cycle(slot, 1)}>
+        <Button
+          iconOnly
+          square
+          variant="ghost"
+          aria-label={`${slotLabel[slot]}を次へ`}
+          className="c--bld-round is-sm"
+          style={roundBtn}
+          onClick={() => cycle(slot, 1)}
+        >
           <MaterialIcon name="swap_horiz" size={16} />
         </Button>
       </Flex>
@@ -145,16 +176,31 @@ export function Builder() {
           >
             クリア
           </Button>
-          <Button className="c--bld-pill is-primary" style={{ minHeight: 44 }} onClick={() => notify("Lookbook #44 にセットアップを保存しました")}>
+          <Button
+            className="c--bld-pill is-primary"
+            style={{ minHeight: 44 }}
+            onClick={() => notify("Lookbook #44 にセットアップを保存しました")}
+          >
             <MaterialIcon name="bookmark_add" size={16} />
             保存する
           </Button>
         </Flex>
       </Flex>
 
-      <ToggleGroup.Root aria-label="コーデの絞り込み条件" multiple value={filters} onValueChange={setFilters} className="c--bld-scroll">
+      <ToggleGroup.Root
+        aria-label="コーデの絞り込み条件"
+        multiple
+        value={filters}
+        onValueChange={setFilters}
+        className="c--bld-scroll"
+      >
         {builderFilters.map((f) => (
-          <ToggleGroup.Item key={f.label} value={f.label} variant="outline" className="c--bld-pill is-filter">
+          <ToggleGroup.Item
+            key={f.label}
+            value={f.label}
+            variant="outline"
+            className="c--bld-pill is-filter"
+          >
             <MaterialIcon name={f.icon} size={14} />
             <span>{f.label}</span>
           </ToggleGroup.Item>
@@ -165,12 +211,24 @@ export function Builder() {
         <h2 className="u-visually-hidden">コーデキャンバス</h2>
         <Flex ai="center" jc="between" g="10" p="10" mb="20" className="c--bld-analysis">
           <Flex ai="center" g="20" style={{ minWidth: 0 }}>
-            <span className="c--bld-badge" style={{ width: 32, height: 32, background: "var(--accent-soft)", color: "var(--on-accent-soft)" }}>
+            <span
+              className="c--bld-badge"
+              style={{
+                width: 32,
+                height: 32,
+                background: "var(--accent-soft)",
+                color: "var(--on-accent-soft)",
+              }}
+            >
               <MaterialIcon name="magic_button" size={18} />
             </span>
             <Stack g="0" style={{ minWidth: 0 }}>
               <Flex ai="center" g="10" fxw="wrap">
-                <Progress.Root value={builderAnalysis.score} aria-label="コーデの相性スコア" className="c--bld-score">
+                <Progress.Root
+                  value={builderAnalysis.score}
+                  aria-label="コーデの相性スコア"
+                  className="c--bld-score"
+                >
                   <span className="c--bld-label" style={{ color: "var(--accent)" }}>
                     Match {builderAnalysis.score}%
                   </span>
@@ -184,7 +242,15 @@ export function Builder() {
               </Text>
             </Stack>
           </Flex>
-          <Button iconOnly square variant="ghost" aria-label="診断の詳細" className="c--bld-round is-sm" style={roundBtn} onClick={() => notify("AI相性診断: 96% (カラーバランス極めて良好)")}>
+          <Button
+            iconOnly
+            square
+            variant="ghost"
+            aria-label="診断の詳細"
+            className="c--bld-round is-sm"
+            style={roundBtn}
+            onClick={() => notify("AI相性診断: 96% (カラーバランス極めて良好)")}
+          >
             <MaterialIcon name="analytics" size={16} />
           </Button>
         </Flex>
@@ -245,10 +311,24 @@ export function Builder() {
                               notify(`${it.name} をセットしました`, true);
                             }}
                           >
-                            <div className="c--bld-thumb" style={{ height: 96, marginBottom: 6, position: "relative" }}>
+                            <div
+                              className="c--bld-thumb"
+                              style={{ height: 96, marginBottom: 6, position: "relative" }}
+                            >
                               <img src={it.imageUrl} alt="" />
                               {on && (
-                                <span className="c--bld-badge" style={{ position: "absolute", top: 4, right: 4, width: 16, height: 16, background: "var(--accent)", color: "var(--on-accent)" }}>
+                                <span
+                                  className="c--bld-badge"
+                                  style={{
+                                    position: "absolute",
+                                    top: 4,
+                                    right: 4,
+                                    width: 16,
+                                    height: 16,
+                                    background: "var(--accent)",
+                                    color: "var(--on-accent)",
+                                  }}
+                                >
                                   <MaterialIcon name="check" size={10} />
                                 </span>
                               )}
@@ -264,8 +344,20 @@ export function Builder() {
                       );
                     })}
                     <li>
-                      <button type="button" className="c--bld-wcard is-add" onClick={() => notify("アイテムの追加は準備中です")}>
-                        <span className="c--bld-badge" style={{ width: 32, height: 32, background: "var(--surface-highest)", marginBottom: 4 }}>
+                      <button
+                        type="button"
+                        className="c--bld-wcard is-add"
+                        onClick={() => notify("アイテムの追加は準備中です")}
+                      >
+                        <span
+                          className="c--bld-badge"
+                          style={{
+                            width: 32,
+                            height: 32,
+                            background: "var(--surface-highest)",
+                            marginBottom: 4,
+                          }}
+                        >
                           <MaterialIcon name="add_a_photo" size={18} />
                         </span>
                         <Inline fz="2xs" fw="500">
@@ -287,8 +379,15 @@ export function Builder() {
       <div role="status" className="u-visually-hidden">
         {announce}
       </div>
-      <div role="status" aria-live="polite" aria-hidden={toastSilent || undefined} className={`c--bld-toast${toast ? " is-show" : ""}`}>
-        {toast && <MaterialIcon name="verified" size={18} style={{ color: "var(--accent-soft)" }} />}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-hidden={toastSilent || undefined}
+        className={`c--bld-toast${toast ? " is-show" : ""}`}
+      >
+        {toast && (
+          <MaterialIcon name="verified" size={18} style={{ color: "var(--accent-soft)" }} />
+        )}
         <span>{toast}</span>
       </div>
     </Stack>

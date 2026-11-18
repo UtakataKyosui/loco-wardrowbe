@@ -25,7 +25,15 @@ export function buildMonthGrid(year: number, month: number): Cell[] {
   });
 }
 
-export const WEEKDAYS_LONG = ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"] as const;
+export const WEEKDAYS_LONG = [
+  "日曜日",
+  "月曜日",
+  "火曜日",
+  "水曜日",
+  "木曜日",
+  "金曜日",
+  "土曜日",
+] as const;
 
 /** "11月19日 木曜日" (spoken date, no year). */
 export function dateLabel(iso: string): string {

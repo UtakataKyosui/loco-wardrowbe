@@ -31,9 +31,7 @@ export function Login() {
       setToken(res.token);
       navigate({ to: "/" });
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : "Failed to log in",
-      );
+      setError(err instanceof ApiClientError ? err.message : "Failed to log in");
     } finally {
       setIsPending(false);
     }
@@ -62,8 +60,8 @@ export function Login() {
         <AuthSubmit isPending={isPending} idleLabel="Log in" pendingLabel="Logging in…" />
       </form>
       <p className="c--authFooter">
-        Don&apos;t have an account? <Link to="/register">Sign up</Link>. You
-        will need to verify your email before you can log in.
+        Don&apos;t have an account? <Link to="/register">Sign up</Link>. You will need to verify
+        your email before you can log in.
       </p>
     </AuthCard>
   );

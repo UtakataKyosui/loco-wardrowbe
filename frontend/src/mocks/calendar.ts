@@ -65,7 +65,10 @@ export const wearLogs: WearLog[] = baseLogs.map((log) =>
 );
 
 /** Per-month analytics that cannot be derived from the logs alone. */
-export const monthAnalytics: Record<string, { utilization: number; topItem: string; topItemCount: number }> = {
+export const monthAnalytics: Record<
+  string,
+  { utilization: number; topItem: string; topItemCount: number }
+> = {
   "2025-10": { utilization: 74, topItem: "カシミヤニット", topItemCount: 8 },
   "2025-09": { utilization: 68, topItem: "リネンシャツ", topItemCount: 6 },
 };

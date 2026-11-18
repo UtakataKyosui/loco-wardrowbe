@@ -43,9 +43,9 @@ export function MagicLink() {
       </AuthStatus>
       <AuthAlert message={error} />
       {error !== null && (
-          <p className="c--authFooter">
-            <Link to="/login">Back to log in</Link>
-          </p>
+        <p className="c--authFooter">
+          <Link to="/login">Back to log in</Link>
+        </p>
       )}
     </AuthCard>
   );

@@ -109,9 +109,7 @@ html {
   scroll-padding-bottom: 112px;
 }
 
-:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible:not(
-    [class*="ui-"]
-  ) {
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible:not([class*="ui-"]) {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

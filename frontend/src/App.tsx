@@ -1,20 +1,20 @@
-import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router"
-import { Button } from "@utakata-ui/react"
-import { Container } from "lism-css/react"
-import { RouteAnnouncer } from './components/a11y/RouteAnnouncer'
-import { AppShell } from './components/AppShell'
-import { isShellPath, screenLabel } from './components/AppShell/nav'
-import { clearToken } from './auth/token'
-import { useIsAuthenticated } from './auth/useIsAuthenticated'
+import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Button } from "@utakata-ui/react";
+import { Container } from "lism-css/react";
+import { RouteAnnouncer } from "./components/a11y/RouteAnnouncer";
+import { AppShell } from "./components/AppShell";
+import { isShellPath, screenLabel } from "./components/AppShell/nav";
+import { clearToken } from "./auth/token";
+import { useIsAuthenticated } from "./auth/useIsAuthenticated";
 
 export function App() {
-  const navigate = useNavigate()
-  const isAuthenticated = useIsAuthenticated()
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const navigate = useNavigate();
+  const isAuthenticated = useIsAuthenticated();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   function handleLogout() {
-    clearToken()
-    navigate({ to: '/login' })
+    clearToken();
+    navigate({ to: "/login" });
   }
 
   // Wardrobe screens get the top bar + floating bottom nav.
@@ -26,7 +26,7 @@ export function App() {
           <Outlet />
         </AppShell>
       </>
-    )
+    );
   }
 
   // Home and the auth routes (login/register/verify/magic-link): no bottom nav.
@@ -42,5 +42,5 @@ export function App() {
       )}
       <Outlet />
     </Container>
-  )
+  );
 }

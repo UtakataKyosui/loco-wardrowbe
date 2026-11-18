@@ -1,11 +1,7 @@
 /// <reference types="vite/client" />
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
-import {
-  createRootRouteWithContext,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
+import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { App } from "../App";
 import { SkipLink } from "../components/a11y/SkipLink";

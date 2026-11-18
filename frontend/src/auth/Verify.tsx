@@ -4,10 +4,7 @@ import { verify } from "../api/generated/auth/auth";
 import { AuthAlert, AuthCard, AuthStatus } from "./AuthCard";
 import { takeTokenFromHash } from "./tokenFromHash";
 
-type State =
-  | { kind: "pending" }
-  | { kind: "verified" }
-  | { kind: "failed"; message: string };
+type State = { kind: "pending" } | { kind: "verified" } | { kind: "failed"; message: string };
 
 /** Landing page of the e-mail verification link (`/verify#<token>`). */
 export function Verify() {
