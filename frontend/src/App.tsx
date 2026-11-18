@@ -1,21 +1,16 @@
-import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Outlet, useRouterState } from "@tanstack/react-router";
 import { Button } from "@utakata-ui/react";
 import { Container } from "lism-css/react";
 import { RouteAnnouncer } from "./components/a11y/RouteAnnouncer";
 import { AppShell } from "./components/AppShell";
 import { isShellPath, screenLabel } from "./components/AppShell/nav";
-import { clearToken } from "./auth/token";
 import { useIsAuthenticated } from "./auth/useIsAuthenticated";
+import { useLogout } from "./auth/useLogout";
 
 export function App() {
-  const navigate = useNavigate();
+  const handleLogout = useLogout();
   const isAuthenticated = useIsAuthenticated();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-
-  function handleLogout() {
-    clearToken();
-    navigate({ to: "/login" });
-  }
 
   // Wardrobe screens get the top bar + floating bottom nav.
   if (isShellPath(pathname)) {

@@ -1,9 +1,14 @@
 import type { CSSProperties } from "react";
 import { Avatar, Button } from "@utakata-ui/react";
 import { Flex, Stack, Text } from "lism-css/react";
+import { useIsAuthenticated } from "../../auth/useIsAuthenticated";
+import { useLogout } from "../../auth/useLogout";
 import { MaterialIcon } from "../MaterialIcon";
 
 export function TopBar({ subLabel }: { subLabel: string }) {
+  const isAuthenticated = useIsAuthenticated();
+  const handleLogout = useLogout();
+
   return (
     <Flex as="header" className="c--topBar" ai="center" jc="between" px="20">
       <Stack g="0">
@@ -25,6 +30,19 @@ export function TopBar({ subLabel }: { subLabel: string }) {
         >
           <MaterialIcon name="tune" />
         </Button>
+        {isAuthenticated && (
+          <Button
+            type="button"
+            variant="ghost"
+            iconOnly
+            square
+            aria-label="ログアウト"
+            onClick={handleLogout}
+            style={{ "--ui-button-square-size": "44px", minHeight: "44px" } as CSSProperties}
+          >
+            <MaterialIcon name="logout" />
+          </Button>
+        )}
         <Avatar.Root
           size="sm"
           role="img"
