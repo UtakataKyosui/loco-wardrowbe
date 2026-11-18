@@ -1,0 +1,192 @@
+/* Stitch "Closet Coordinator" palette mapped onto Lism's CSS variables.
+ * Light: black primary + terracotta accent. Dark: warm sand accent. */
+:root {
+  color-scheme: light dark;
+
+  /* Lism semantic colors */
+  --base: #f9f9f8;
+  --base-2: #f3f4f3;
+  --text: #1a1c1c;
+  --text-2: #444748;
+  --divider: #c4c7c7;
+  --brand: #000000;
+  --accent: #944929;
+  --link: #944929;
+
+  /* Extra semantic vars (Material 3 roles) */
+  --surface: #f9f9f8;
+  --surface-dim: #dadad9;
+  --surface-lowest: #ffffff;
+  --surface-low: #f3f4f3;
+  --surface-container: #eeeeed;
+  --surface-high: #e8e8e7;
+  --surface-highest: #e2e2e2;
+  --on-surface: #1a1c1c;
+  --on-surface-variant: #444748;
+  --outline: #747878;
+  --outline-variant: #c4c7c7;
+  --primary: #000000;
+  --on-primary: #ffffff;
+  --primary-container: #1c1b1b;
+  --on-primary-container: #858383;
+  --accent-container: #fe9e77;
+  --on-accent: #ffffff;
+  --on-accent-container: #773315;
+  --accent-soft: #ffdbce;
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+  --inverse-surface: #2f3130;
+  --inverse-on-surface: #f1f1f0;
+  --nav-bg: rgb(249 249 248 / 0.85);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.06);
+  --radius-pill: 9999px; /* light: true pill. dark: .75rem (Stitch quirk) */
+  --radius-nav: 28px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --base: #131313;
+    --base-2: #1c1b1b;
+    --text: #e5e2e1;
+    --text-2: #d2c4ba;
+    --divider: #4e453d;
+    --brand: #e2c0a3;
+    --accent: #e2c0a3;
+    --link: #e2c0a3;
+
+    --surface: #131313;
+    --surface-dim: #131313;
+    --surface-lowest: #0e0e0e;
+    --surface-low: #1c1b1b;
+    --surface-container: #201f1f;
+    --surface-high: #2a2a2a;
+    --surface-highest: #353535;
+    --on-surface: #e5e2e1;
+    --on-surface-variant: #d2c4ba;
+    --outline: #9b8e85;
+    --outline-variant: #4e453d;
+    --primary: #e2c0a3;
+    --on-primary: #412c17;
+    --primary-container: #bfa084;
+    --on-primary-container: #4d3721;
+    --accent-container: #bfa084;
+    --on-accent: #412c17;
+    --on-accent-container: #4d3721;
+    --accent-soft: #59422c;
+    --error: #ffb4ab;
+    --on-error: #690005;
+    --error-container: #93000a;
+    --on-error-container: #ffdad6;
+    --inverse-surface: #e5e2e1;
+    --inverse-on-surface: #313030;
+    --nav-bg: rgb(19 19 19 / 0.85);
+    --shadow-card: 0 2px 4px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.5);
+    --radius-pill: 0.75rem;
+  }
+}
+
+body {
+  background: var(--base);
+  color: var(--text);
+  font-family: var(--ff--base);
+  margin: 0;
+}
+
+@layer lism-custom {
+  .c--icon {
+    font-family: "Material Symbols Outlined";
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 300,
+      "GRAD" 0,
+      "opsz" 24;
+  }
+  .c--icon.is-fill {
+    font-variation-settings:
+      "FILL" 1,
+      "wght" 300,
+      "GRAD" 0,
+      "opsz" 24;
+  }
+  .c--bottomNav {
+    position: fixed;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 28rem;
+    height: 64px;
+    z-index: 50;
+    border-radius: var(--radius-nav);
+    background: var(--nav-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--outline-variant);
+    box-shadow: var(--shadow-card);
+  }
+  .c--navItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 64px;
+    height: 48px;
+    color: var(--on-surface-variant);
+    text-decoration: none;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .c--navItem[data-active="true"] {
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .c--navItem[data-active="true"]::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--accent);
+  }
+  .c--navFab {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+  .c--topBar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: 64px;
+    background: var(--nav-bg);
+    backdrop-filter: blur(16px);
+  }
+  .c--iconBtn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--on-surface);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+}
