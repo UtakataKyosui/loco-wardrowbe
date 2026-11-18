@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { magicLinkVerify } from "../api/generated/auth/auth";
-import { AuthCard } from "./AuthCard";
+import { AuthAlert, AuthCard, AuthStatus } from "./AuthCard";
 import { setToken } from "./token";
 import { takeTokenFromHash } from "./tokenFromHash";
 
@@ -38,17 +38,14 @@ export function MagicLink() {
 
   return (
     <AuthCard title="Signing you in">
-      {error === null ? (
-        <p className="c--authText">One moment…</p>
-      ) : (
-        <>
-          <p className="c--authAlert" role="alert">
-            {error}
-          </p>
+      <AuthStatus busy={error === null}>
+        {error === null && <p className="c--authText">One moment…</p>}
+      </AuthStatus>
+      <AuthAlert message={error} />
+      {error !== null && (
           <p className="c--authFooter">
             <Link to="/login">Back to log in</Link>
           </p>
-        </>
       )}
     </AuthCard>
   );

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { ApiClientError, post } from "../api/client";
-import { AuthCard, AuthField } from "./AuthCard";
+import { AuthAlert, AuthCard, AuthField, AuthSubmit } from "./AuthCard";
 
 export function Register() {
   const [name, setName] = useState("");
@@ -73,15 +73,9 @@ export function Register() {
           value={password}
           onChange={setPassword}
         />
-        <button className="c--authButton" type="submit" disabled={isPending}>
-          {isPending ? "Signing up…" : "Sign up"}
-        </button>
+        <AuthAlert message={error} />
+        <AuthSubmit isPending={isPending} idleLabel="Sign up" pendingLabel="Signing up…" />
       </form>
-      {error && (
-        <p className="c--authAlert" role="alert">
-          {error}
-        </p>
-      )}
       <p className="c--authFooter">
         Already have an account? <Link to="/login">Log in</Link>
       </p>

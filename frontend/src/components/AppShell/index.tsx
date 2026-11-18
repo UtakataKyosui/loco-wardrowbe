@@ -17,7 +17,7 @@ export function AppShell({ subLabel, children }: { subLabel: string; children: R
       style={{ minHeight: "100dvh", background: "var(--surface)" }}
     >
       <TopBar subLabel={subLabel} />
-      <Group as="main" px="20" pb="70" pt="10">
+      <Group as="main" id="main" tabIndex={-1} px="20" pt="10" style={{ paddingBlockEnd: "7rem" }}>
         {children}
       </Group>
       <BottomNav />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ApiClientError, post } from "../api/client";
-import { AuthCard, AuthField } from "./AuthCard";
+import { AuthAlert, AuthCard, AuthField, AuthSubmit } from "./AuthCard";
 import { setToken } from "./token";
 
 interface LoginResponse {
@@ -58,15 +58,9 @@ export function Login() {
           value={password}
           onChange={setPassword}
         />
-        <button className="c--authButton" type="submit" disabled={isPending}>
-          {isPending ? "Logging in…" : "Log in"}
-        </button>
+        <AuthAlert message={error} />
+        <AuthSubmit isPending={isPending} idleLabel="Log in" pendingLabel="Logging in…" />
       </form>
-      {error && (
-        <p className="c--authAlert" role="alert">
-          {error}
-        </p>
-      )}
       <p className="c--authFooter">
         Don&apos;t have an account? <Link to="/register">Sign up</Link>. You
         will need to verify your email before you can log in.

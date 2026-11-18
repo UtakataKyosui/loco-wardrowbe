@@ -10,7 +10,7 @@ export function Home() {
   }
 
   return (
-    <Group p="30">
+    <Group as="main" id="main" tabIndex={-1} lang="en" p="30">
       <Stack g="20" ai="center">
         <Heading level="1" ff="accent" fz="3xl">KINFOLK</Heading>
         <Text>

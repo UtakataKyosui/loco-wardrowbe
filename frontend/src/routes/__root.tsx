@@ -8,8 +8,8 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { App } from "../App";
-import "lism-css/main.css";
-import '@utakata-ui/react/styles.css';
+import { SkipLink } from "../components/a11y/SkipLink";
+import "@utakata-ui/react/styles.css";
 import "../styles/theme.css";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -28,7 +28,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block",
       },
     ],
   }),
@@ -54,6 +54,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <HeadContent />
       </head>
       <body>
+        <SkipLink />
         {children}
         <Scripts />
       </body>
