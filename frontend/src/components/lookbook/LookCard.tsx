@@ -1,5 +1,6 @@
-import { Box, Flex, Heading, Text } from "lism-css/react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Badge, Button, Card, Toggle } from "@utakata-ui/react";
+import { Flex } from "lism-css/react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { MaterialIcon } from "../MaterialIcon";
 import type { LookbookEntry } from "../../mocks/lookbook";
 
@@ -32,12 +33,10 @@ function Collage({ entry }: { entry: LookbookEntry }) {
           <div className="lb-scrim" />
           {entry.overlay && (
             <div className="lb-overlay">
-              <span className="lb-label" style={{ textTransform: "uppercase", opacity: 0.85 }}>
+              <span className="lb-label" style={{ textTransform: "uppercase" }}>
                 {entry.overlay.eyebrow}
               </span>
-              <Text as="div" ff="accent" fz="l" lh="1" style={{ marginTop: 2 }}>
-                {entry.overlay.title}
-              </Text>
+              <div className="lb-overlayTitle">{entry.overlay.title}</div>
             </div>
           )}
         </div>
@@ -52,25 +51,25 @@ function Collage({ entry }: { entry: LookbookEntry }) {
   );
 }
 
-function Badge({ badge }: { badge: LookbookEntry["badge"] }) {
+function ScoreBadge({ badge }: { badge: LookbookEntry["badge"] }) {
   const text = { textTransform: "none" as const };
   if (badge.kind === "favorite") {
     return (
-      <span className="lb-chip is-accent">
+      <Badge variant="subtle" className="lb-chip is-accent">
         <MaterialIcon name="star" filled size={14} />
         <span className="lb-label" style={{ ...text, color: "var(--primary)" }}>
           {badge.label}
         </span>
-      </span>
+      </Badge>
     );
   }
   return (
-    <span className="lb-chip is-accent">
+    <Badge variant="subtle" className="lb-chip is-accent">
       {badge.kind === "icon" && <MaterialIcon name={badge.icon} size={14} />}
       <span className="lb-labelMd" style={text}>
         {badge.label}
       </span>
-    </span>
+    </Badge>
   );
 }
 
@@ -88,129 +87,135 @@ export function LookCard({ entry }: { entry: LookbookEntry }) {
     if (wear !== "idle") return;
     setWear("busy");
     timers.current.push(
-      window.setTimeout(() => {
-        setWear("done");
-        timers.current.push(window.setTimeout(() => setWear("idle"), 2400));
-      }, 500),
+      window.setTimeout(() => setWear("done"), 500),
     );
   };
 
+  const wearMessage =
+    wear === "busy" ? "着用ログ登録中..." : wear === "done" ? "本日のコーデに設定済" : "";
+
   return (
-    <Box as="article" className="lb-card">
-      <div className="lb-canvas">
-        <div className="lb-topRow">
-          <span className="lb-chip lb-label">{entry.no}</span>
-          <Badge badge={entry.badge} />
-        </div>
-        <Collage entry={entry} />
-        <Flex jc="between" ai="center" g="10" style={{ marginTop: 4, paddingInline: 4 }}>
-          <Flex ai="center" g="10" c="text-2">
-            {entry.footLeft.dot && <span className="lb-dot" />}
-            <span className="lb-label" style={{ letterSpacing: "0.04em", fontWeight: 500 }}>
-              {entry.footLeft.text}
+    <li className="lb-li">
+      <Card.Root className="lb-card">
+        <div className="lb-canvas">
+          <div className="lb-topRow">
+            <Badge variant="subtle" className="lb-chip lb-label">
+              {entry.no}
+            </Badge>
+            <ScoreBadge badge={entry.badge} />
+          </div>
+          <Collage entry={entry} />
+          <Flex jc="between" ai="center" g="10" style={{ marginTop: 4, paddingInline: 4 }}>
+            <Flex ai="center" g="10" c="text-2">
+              {entry.footLeft.dot && <span className="lb-dot" aria-hidden="true" />}
+              <span className="lb-label" style={{ letterSpacing: "0.04em", fontWeight: 500 }}>
+                {entry.footLeft.text}
+              </span>
+            </Flex>
+            <span
+              className={entry.footRight.accent ? "lb-labelMd" : "lb-label"}
+              style={{
+                color: entry.footRight.accent ? "var(--accent)" : "var(--on-surface)",
+                fontWeight: entry.footRight.accent ? 600 : 500,
+                letterSpacing: "0.04em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {entry.footRight.text}
             </span>
           </Flex>
-          <span
-            className={entry.footRight.accent ? "lb-labelMd" : "lb-label"}
-            style={{
-              color: entry.footRight.accent ? "var(--accent)" : "var(--on-surface)",
-              fontWeight: entry.footRight.accent ? 600 : 500,
-              letterSpacing: "0.04em",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {entry.footRight.text}
-          </span>
-        </Flex>
-      </div>
-
-      <Flex fxd="column" style={{ padding: 16, gap: 12 }}>
-        <Flex jc="between" ai="start" g="10">
-          <div>
-            <span className="lb-label" style={{ color: "var(--on-surface-variant)", textTransform: "uppercase" }}>
-              {entry.style}
-            </span>
-            <Heading level="2" ff="accent" fz="l" fw="500" style={{ marginTop: 2 }}>
-              {entry.title}
-            </Heading>
-            <Text fz="s" c="text-2" style={{ marginTop: 2 }}>
-              {entry.subtitle}
-            </Text>
-          </div>
-          {entry.id === "look-01" ? (
-            <button type="button" className="lb-iconBtn" aria-label="その他のオプション">
-              <MaterialIcon name="more_horiz" size={20} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className={`lb-iconBtn${saved ? " is-on" : ""}`}
-              aria-label="お気に入りに保存"
-              aria-pressed={saved}
-              onClick={() => setSaved((v) => !v)}
-            >
-              <MaterialIcon name={saved ? "bookmark" : "bookmark_border"} filled={saved} size={20} />
-            </button>
-          )}
-        </Flex>
-
-        <div className="lb-tags">
-          {entry.tags.map((t) => (
-            <span key={t.label} className={`lb-tag lb-label is-${t.kind ?? "plain"}`}>
-              {t.kind === "history" && <MaterialIcon name="history" size={13} style={{ color: "var(--accent)" }} />}
-              {t.label}
-            </span>
-          ))}
         </div>
 
-        <button type="button" className="lb-items" aria-label={`アイテム ${entry.items.length}点を見る`}>
-          <Flex ai="center" g="10">
-            <div className="lb-thumbs">
-              {entry.items.map((it) => (
-                <div className="lb-thumb" key={it.src}>
-                  <img src={it.src} alt={it.alt} loading="lazy" />
-                </div>
+        <div className="lb-body">
+          <Flex jc="between" ai="start" g="10">
+            <Card.Header className="lb-head">
+              <span className="lb-label" style={{ color: "var(--on-surface-variant)", textTransform: "uppercase" }}>
+                {entry.style}
+              </span>
+              <Card.Title level="2" className="lb-title">
+                {entry.title}
+              </Card.Title>
+              <Card.Description className="lb-sub">{entry.subtitle}</Card.Description>
+            </Card.Header>
+            {entry.id === "look-01" ? (
+              <Button
+                iconOnly
+                square
+                variant="ghost"
+                className="lb-iconBtn"
+                aria-label={`${entry.title}のその他のオプション`}
+                style={{ "--ui-button-square-size": "44px", minHeight: 44 } as CSSProperties}
+              >
+                <MaterialIcon name="more_horiz" size={20} />
+              </Button>
+            ) : (
+              <Toggle
+                iconOnly
+                variant="ghost"
+                className="lb-iconBtn"
+                aria-label={`${entry.title}をお気に入りに保存`}
+                pressed={saved}
+                onPressedChange={setSaved}
+                style={{ minWidth: 44, minHeight: 44 }}
+              >
+                <MaterialIcon name={saved ? "bookmark" : "bookmark_border"} filled={saved} size={20} />
+              </Toggle>
+            )}
+          </Flex>
+
+          <Card.Content className="lb-content">
+            <div className="lb-tags">
+              {entry.tags.map((t) => (
+                <Badge key={t.label} variant="subtle" className={`lb-tag lb-label is-${t.kind ?? "plain"}`}>
+                  {t.kind === "history" && (
+                    <MaterialIcon name="history" size={13} style={{ color: "var(--accent)" }} />
+                  )}
+                  {t.label}
+                </Badge>
               ))}
             </div>
-            <span className="lb-label" style={{ fontWeight: 500, paddingLeft: 4, color: "var(--on-surface)" }}>
-              アイテム {entry.items.length}点
-            </span>
-          </Flex>
-          <MaterialIcon name="chevron_right" size={18} style={{ color: "var(--on-surface-variant)" }} />
-        </button>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8, paddingTop: 4 }}>
-          <button
-            type="button"
-            className={`lb-cta lb-labelMd${wear === "done" ? " is-done" : ""}`}
-            onClick={logWear}
-            aria-live="polite"
-          >
-            {wear === "idle" && (
-              <>
-                <MaterialIcon name="checkroom" size={18} />
-                <span>このコーデを着る (ログ)</span>
-              </>
-            )}
-            {wear === "busy" && (
-              <>
-                <MaterialIcon name="refresh" size={18} className="lb-spin" />
-                <span>着用ログ登録中...</span>
-              </>
-            )}
-            {wear === "done" && (
-              <>
-                <MaterialIcon name="done" size={18} />
-                <span>本日のコーデに設定済</span>
-              </>
-            )}
-          </button>
-          <button type="button" className="lb-edit lb-labelMd">
-            <MaterialIcon name="edit" size={17} style={{ color: "var(--accent)" }} />
-            <span>編集</span>
-          </button>
+            <Button variant="ghost" className="lb-items">
+              <Flex ai="center" g="10">
+                <div className="lb-thumbs" aria-hidden="true">
+                  {entry.items.map((it) => (
+                    <div className="lb-thumb" key={it.src}>
+                      <img src={it.src} alt="" loading="lazy" />
+                    </div>
+                  ))}
+                </div>
+                <span className="lb-label" style={{ fontWeight: 500, paddingLeft: 4, color: "var(--on-surface)" }}>
+                  アイテム {entry.items.length}点<span className="u-visually-hidden">を見る: {entry.title}</span>
+                </span>
+              </Flex>
+              <MaterialIcon name="chevron_right" size={18} style={{ color: "var(--on-surface-variant)" }} />
+            </Button>
+          </Card.Content>
+
+          <Card.Footer className="lb-foot">
+            <Button
+              className={`lb-cta lb-labelMd${wear === "done" ? " is-done" : ""}`}
+              onClick={logWear}
+              disabled={wear !== "idle"}
+              focusableWhenDisabled
+            >
+              <MaterialIcon name={wear === "idle" ? "checkroom" : wear === "busy" ? "refresh" : "done"} size={18} className={wear === "busy" ? "lb-spin" : undefined} />
+              <span>
+                このコーデを着る (ログ)<span className="u-visually-hidden">: {entry.title}</span>
+              </span>
+            </Button>
+            <Button variant="outline" className="lb-edit lb-labelMd">
+              <MaterialIcon name="edit" size={17} style={{ color: "var(--accent)" }} />
+              <span>
+                編集<span className="u-visually-hidden">: {entry.title}</span>
+              </span>
+            </Button>
+            <p role="status" className="lb-wearStatus lb-label">
+              {wearMessage}
+            </p>
+          </Card.Footer>
         </div>
-      </Flex>
-    </Box>
+      </Card.Root>
+    </li>
   );
 }

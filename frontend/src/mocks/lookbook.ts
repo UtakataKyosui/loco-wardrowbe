@@ -1,3 +1,5 @@
+export type SeasonKey = "ss" | "aw";
+
 export type OccasionKey = "all" | "office" | "casual" | "date" | "travel";
 
 export type LookbookOccasion = { key: OccasionKey; label: string; count: number };
@@ -16,6 +18,8 @@ export type LookbookEntry = {
   id: string;
   no: string; // "No. 01 · Work Capsule"
   occasion: Exclude<OccasionKey, "all">;
+  /** Seasons the look suits (used by the season filter). */
+  seasons: SeasonKey[];
   layout: CollageLayout;
   collage: LookbookImage[];
   /** Overlay caption on the primary image (spread layout). */
@@ -51,6 +55,7 @@ export const LOOKBOOK_ENTRIES: LookbookEntry[] = [
     id: "look-01",
     no: "No. 01 · Work Capsule",
     occasion: "office",
+    seasons: ["aw"],
     layout: "spread",
     collage: [
       {
@@ -104,6 +109,7 @@ export const LOOKBOOK_ENTRIES: LookbookEntry[] = [
     id: "look-02",
     no: "No. 02 · Leisure",
     occasion: "casual",
+    seasons: ["ss", "aw"],
     layout: "pair",
     collage: [
       {
@@ -151,6 +157,7 @@ export const LOOKBOOK_ENTRIES: LookbookEntry[] = [
     id: "look-03",
     no: "No. 03 · Evening",
     occasion: "date",
+    seasons: ["aw"],
     layout: "hero",
     collage: [
       {
@@ -195,6 +202,7 @@ export const LOOKBOOK_ENTRIES: LookbookEntry[] = [
     id: "look-04",
     no: "No. 04 · Weather Adaptive",
     occasion: "office",
+    seasons: ["ss", "aw"],
     layout: "split",
     collage: [
       {

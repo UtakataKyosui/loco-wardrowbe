@@ -1,17 +1,24 @@
+import { Badge, Empty, ToggleGroup } from "@utakata-ui/react";
 import { Flex, Heading, Inline, Stack, Text } from "lism-css/react";
 import { useState } from "react";
 import { LookCard } from "../components/lookbook/LookCard";
 import { MaterialIcon } from "../components/MaterialIcon";
-import { LOOKBOOK_ENTRIES, LOOKBOOK_OCCASIONS, type OccasionKey } from "../mocks/lookbook";
+import {
+  LOOKBOOK_ENTRIES,
+  LOOKBOOK_OCCASIONS,
+  type OccasionKey,
+  type SeasonKey,
+} from "../mocks/lookbook";
 import "../components/lookbook/lookbook.css";
 
-type Scope = "ss" | "aw";
-
 export function Lookbook() {
-  const [scope, setScope] = useState<Scope>("ss");
+  // No season pressed = every season. The season toggle really filters the list.
+  const [scope, setScope] = useState<SeasonKey | null>(null);
   const [occasion, setOccasion] = useState<OccasionKey>("all");
 
-  const visible = LOOKBOOK_ENTRIES.filter((e) => occasion === "all" || e.occasion === occasion);
+  const visible = LOOKBOOK_ENTRIES.filter(
+    (e) => (occasion === "all" || e.occasion === occasion) && (scope === null || e.seasons.includes(scope)),
+  );
 
   return (
     <div className="c--lb" style={{ paddingBottom: 32 }}>
@@ -30,51 +37,68 @@ export function Lookbook() {
             </Inline>
           </Heading>
         </Stack>
-        <span className="lb-sortChip lb-label">
+        {/* Static sort indicator, not a control. */}
+        <Badge variant="subtle" className="lb-sortChip lb-label">
           <MaterialIcon name="insights" size={15} style={{ color: "var(--accent)" }} />
+          <span className="u-visually-hidden">並び順: </span>
           着用頻度順
-        </span>
+        </Badge>
       </Flex>
 
-      <div className="lb-segment" role="group" aria-label="シーズン" style={{ marginBottom: 16 }}>
-        <button type="button" className="lb-segBtn lb-labelMd" aria-pressed={scope === "ss"} onClick={() => setScope("ss")}>
+      <ToggleGroup.Root
+        aria-label="シーズンで絞り込み"
+        className="lb-segment"
+        style={{ marginBottom: 16 }}
+        value={scope ? [scope] : []}
+        onValueChange={(v) => setScope((v[0] as SeasonKey | undefined) ?? null)}
+      >
+        <ToggleGroup.Item value="ss" className="lb-segBtn lb-labelMd">
           <MaterialIcon name="eco" size={15} />
           <span>SPRING / SUMMER</span>
-        </button>
-        <button type="button" className="lb-segBtn lb-labelMd" aria-pressed={scope === "aw"} onClick={() => setScope("aw")}>
+        </ToggleGroup.Item>
+        <ToggleGroup.Item value="aw" className="lb-segBtn lb-labelMd">
           <MaterialIcon name="ac_unit" size={15} />
           <span>AUTUMN / WINTER</span>
-        </button>
-      </div>
+        </ToggleGroup.Item>
+      </ToggleGroup.Root>
 
-      <div className="lb-pills" role="group" aria-label="シーン" style={{ marginBottom: 24 }}>
+      <ToggleGroup.Root
+        aria-label="シーンで絞り込み"
+        className="lb-pills"
+        style={{ marginBottom: 24 }}
+        value={[occasion]}
+        onValueChange={(v) => setOccasion((v[0] as OccasionKey | undefined) ?? "all")}
+      >
         {LOOKBOOK_OCCASIONS.map((o) => (
-          <button
-            key={o.key}
-            type="button"
-            className="lb-pill lb-labelMd"
-            aria-pressed={occasion === o.key}
-            onClick={() => setOccasion(o.key)}
-          >
+          <ToggleGroup.Item key={o.key} value={o.key} className="lb-pill lb-labelMd">
             {o.label} ({o.count})
-          </button>
+          </ToggleGroup.Item>
         ))}
-      </div>
+      </ToggleGroup.Root>
 
-      <Stack style={{ gap: 32 }}>
-        {visible.map((e) => (
-          <LookCard key={e.id} entry={e} />
-        ))}
-        {visible.length === 0 && (
-          <Text ta="center" c="text-2" fz="s" style={{ padding: "32px 0" }}>
-            このシーンの保存済みコーデはまだありません
-          </Text>
-        )}
-      </Stack>
+      <p role="status" className="u-visually-hidden">
+        {visible.length}件のコーデを表示中
+      </p>
+
+      {visible.length > 0 ? (
+        <ul className="lb-list">
+          {visible.map((e) => (
+            <LookCard key={e.id} entry={e} />
+          ))}
+        </ul>
+      ) : (
+        <Empty.Root>
+          <Empty.Title level="2">コーデがありません</Empty.Title>
+          <Empty.Description>この条件の保存済みコーデはまだありません</Empty.Description>
+        </Empty.Root>
+      )}
 
       <Flex fxd="column" ai="center" jc="center" g="10" ta="center" style={{ marginTop: 40, marginBottom: 16 }}>
-        <div style={{ width: 32, height: 2, borderRadius: 9999, background: "var(--outline-variant)" }} />
-        <Text ff="accent" fz="xl" c="text-2" o="60">
+        <div
+          aria-hidden="true"
+          style={{ width: 32, height: 2, borderRadius: 9999, background: "var(--outline-variant)" }}
+        />
+        <Text ff="accent" fz="xl" style={{ color: "var(--on-surface-variant)" }}>
           Kinfolk Archive
         </Text>
         <span

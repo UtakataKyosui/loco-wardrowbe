@@ -12,12 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as ClosetRouteImport } from './routes/closet'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LookbookRouteImport } from './routes/lookbook'
 import { Route as MagicLinkRouteImport } from './routes/magic-link'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as ClosetIndexRouteImport } from './routes/closet.index'
 import { Route as ClosetItemIdRouteImport } from './routes/closet.$itemId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -33,11 +33,6 @@ const BuilderRoute = BuilderRouteImport.update({
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClosetRoute = ClosetRouteImport.update({
-  id: '/closet',
-  path: '/closet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -65,48 +60,53 @@ const VerifyRoute = VerifyRouteImport.update({
   path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClosetIndexRoute = ClosetIndexRouteImport.update({
+  id: '/closet/',
+  path: '/closet/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClosetItemIdRoute = ClosetItemIdRouteImport.update({
-  id: '/$itemId',
-  path: '/$itemId',
-  getParentRoute: () => ClosetRoute,
+  id: '/closet/$itemId',
+  path: '/closet/$itemId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/builder': typeof BuilderRoute
   '/calendar': typeof CalendarRoute
-  '/closet': typeof ClosetRouteWithChildren
   '/login': typeof LoginRoute
   '/lookbook': typeof LookbookRoute
   '/magic-link': typeof MagicLinkRoute
   '/register': typeof RegisterRoute
   '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
+  '/closet/': typeof ClosetIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/builder': typeof BuilderRoute
   '/calendar': typeof CalendarRoute
-  '/closet': typeof ClosetRouteWithChildren
   '/login': typeof LoginRoute
   '/lookbook': typeof LookbookRoute
   '/magic-link': typeof MagicLinkRoute
   '/register': typeof RegisterRoute
   '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
+  '/closet': typeof ClosetIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/builder': typeof BuilderRoute
   '/calendar': typeof CalendarRoute
-  '/closet': typeof ClosetRouteWithChildren
   '/login': typeof LoginRoute
   '/lookbook': typeof LookbookRoute
   '/magic-link': typeof MagicLinkRoute
   '/register': typeof RegisterRoute
   '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
+  '/closet/': typeof ClosetIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,49 +114,50 @@ export interface FileRouteTypes {
     | '/'
     | '/builder'
     | '/calendar'
-    | '/closet'
     | '/login'
     | '/lookbook'
     | '/magic-link'
     | '/register'
     | '/verify'
     | '/closet/$itemId'
+    | '/closet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/builder'
     | '/calendar'
-    | '/closet'
     | '/login'
     | '/lookbook'
     | '/magic-link'
     | '/register'
     | '/verify'
     | '/closet/$itemId'
+    | '/closet'
   id:
     | '__root__'
     | '/'
     | '/builder'
     | '/calendar'
-    | '/closet'
     | '/login'
     | '/lookbook'
     | '/magic-link'
     | '/register'
     | '/verify'
     | '/closet/$itemId'
+    | '/closet/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BuilderRoute: typeof BuilderRoute
   CalendarRoute: typeof CalendarRoute
-  ClosetRoute: typeof ClosetRouteWithChildren
   LoginRoute: typeof LoginRoute
   LookbookRoute: typeof LookbookRoute
   MagicLinkRoute: typeof MagicLinkRoute
   RegisterRoute: typeof RegisterRoute
   VerifyRoute: typeof VerifyRoute
+  ClosetItemIdRoute: typeof ClosetItemIdRoute
+  ClosetIndexRoute: typeof ClosetIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -180,13 +181,6 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/closet': {
-      id: '/closet'
-      path: '/closet'
-      fullPath: '/closet'
-      preLoaderRoute: typeof ClosetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -224,37 +218,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/closet/': {
+      id: '/closet/'
+      path: '/closet'
+      fullPath: '/closet/'
+      preLoaderRoute: typeof ClosetIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/closet/$itemId': {
       id: '/closet/$itemId'
-      path: '/$itemId'
+      path: '/closet/$itemId'
       fullPath: '/closet/$itemId'
       preLoaderRoute: typeof ClosetItemIdRouteImport
-      parentRoute: typeof ClosetRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface ClosetRouteChildren {
-  ClosetItemIdRoute: typeof ClosetItemIdRoute
-}
-
-const ClosetRouteChildren: ClosetRouteChildren = {
-  ClosetItemIdRoute: ClosetItemIdRoute,
-}
-
-const ClosetRouteWithChildren =
-  ClosetRoute._addFileChildren(ClosetRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BuilderRoute: BuilderRoute,
   CalendarRoute: CalendarRoute,
-  ClosetRoute: ClosetRouteWithChildren,
   LoginRoute: LoginRoute,
   LookbookRoute: LookbookRoute,
   MagicLinkRoute: MagicLinkRoute,
   RegisterRoute: RegisterRoute,
   VerifyRoute: VerifyRoute,
+  ClosetItemIdRoute: ClosetItemIdRoute,
+  ClosetIndexRoute: ClosetIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

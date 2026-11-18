@@ -1,7 +1,10 @@
+import { Button } from "@utakata-ui/react";
 import { Flex, Heading, Inline } from "lism-css/react";
 import { MaterialIcon } from "../MaterialIcon";
 
 type Props = { year: number; month: number; onPrev: () => void; onNext: () => void; onToday: () => void };
+
+const iconBtnStyle = { "--ui-button-square-size": "44px", minHeight: 44 } as React.CSSProperties;
 
 export function MonthHeader({ year, month, onPrev, onNext, onToday }: Props) {
   return (
@@ -10,27 +13,22 @@ export function MonthHeader({ year, month, onPrev, onNext, onToday }: Props) {
         <span className="c--cal-eyebrow" style={{ display: "block", marginBottom: 2 }}>
           ARCHIVE &amp; INSIGHTS
         </span>
-        <Heading level="1" ff="accent" fz="3xl" fw="normal" lh="s" aria-live="polite">
+        <Heading level="1" ff="accent" fz="3xl" fw="normal" lh="s">
           {year}
           <Inline fz="s" c="inherit" className="c--cal-muted">年</Inline> {month + 1}
           <Inline fz="s" className="c--cal-muted">月</Inline>
         </Heading>
       </div>
-      <div className="c--cal-pillbar">
-        <button type="button" className="c--cal-iconbtn" aria-label="先月" onClick={onPrev}>
+      <div className="c--cal-pillbar" role="group" aria-label="表示する月の切り替え">
+        <Button iconOnly square variant="ghost" aria-label="前の月" style={iconBtnStyle} onClick={onPrev}>
           <MaterialIcon name="chevron_left" size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={onToday}
-          aria-label="今月へ戻る"
-          style={{ background: "none", border: 0, cursor: "pointer", color: "var(--primary)", font: "inherit", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", padding: "0 4px" }}
-        >
+        </Button>
+        <Button variant="ghost" className="c--cal-today" style={{ minHeight: 44, minWidth: 44 }} onClick={onToday}>
           今月
-        </button>
-        <button type="button" className="c--cal-iconbtn" aria-label="来月" onClick={onNext}>
+        </Button>
+        <Button iconOnly square variant="ghost" aria-label="次の月" style={iconBtnStyle} onClick={onNext}>
           <MaterialIcon name="chevron_right" size={18} />
-        </button>
+        </Button>
       </div>
     </Flex>
   );

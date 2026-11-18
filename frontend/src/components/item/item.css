@@ -20,7 +20,7 @@
     min-height: 44px;
     color: var(--on-surface);
     text-decoration: none;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -28,8 +28,10 @@
   .c--itemRoundBtn {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
     border: 1px solid transparent;
     border-radius: 9999px;
     background: var(--surface-container);
@@ -43,6 +45,22 @@
     background: var(--surface-low);
     border-radius: 16px;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  .c--itemPerf {
+    --ui-card-padding: 16px;
+    --ui-card-gap: 12px;
+    --ui-card-background: var(--surface-low);
+    --ui-card-border: transparent;
+    padding: 16px;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+  .c--itemPerfTitle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--on-surface);
   }
   .c--itemTile {
     background: var(--surface-lowest);
@@ -85,7 +103,7 @@
     gap: 6px;
     padding: 4px 10px;
     border-radius: var(--radius-pill);
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     color: var(--on-surface-variant);
   }
@@ -100,8 +118,9 @@
   .c--itemStageBtn {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
     border: 0;
     border-radius: 9999px;
     cursor: pointer;
@@ -111,9 +130,10 @@
     bottom: 12px;
     left: 50%;
     transform: translateX(-50%);
+    margin: 0;
     padding: 2px 8px;
     border-radius: 9999px;
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     background: color-mix(in srgb, var(--primary) 70%, transparent);
     color: var(--on-primary);
@@ -126,10 +146,16 @@
     padding: 0 4px;
     overflow-x: auto;
   }
+  .c--itemThumbGroup {
+    display: flex;
+    gap: 8px;
+  }
   .c--itemThumb {
     flex: none;
     width: 48px;
+    min-width: 48px;
     height: 56px;
+    min-height: 56px;
     padding: 0;
     border: 0;
     border-radius: 8px;
@@ -144,14 +170,17 @@
     object-fit: cover;
     display: block;
   }
-  .c--itemThumb[aria-current="true"] {
+  .c--itemThumb[data-pressed] {
     opacity: 1;
-    outline: 1px solid var(--outline);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
   }
   .c--itemThumbAdd {
     flex: none;
     width: 48px;
     height: 56px;
+    min-height: 56px;
+    padding: 0;
     border: 0;
     border-radius: 8px;
     background: var(--surface-container);
@@ -160,11 +189,11 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 8px;
+    font-size: 11px;
     cursor: pointer;
   }
   .c--itemEyebrow {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -178,14 +207,14 @@
     border-radius: var(--radius-pill);
     background: var(--surface-container);
     color: var(--on-surface);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
   .c--itemChip.is-accent {
     background: var(--accent-soft);
-    color: var(--on-accent-container);
+    color: var(--on-accent-soft);
     text-transform: none;
     letter-spacing: 0.04em;
   }
@@ -199,7 +228,8 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    min-height: 32px;
+    min-height: 44px;
+    padding: 0 4px;
     border: 0;
     background: none;
     color: var(--accent);
@@ -208,6 +238,7 @@
     cursor: pointer;
   }
   .c--itemStats {
+    margin: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
@@ -221,8 +252,30 @@
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
     min-width: 0;
   }
+  .c--itemStat dd {
+    margin: 0;
+  }
+  .c--itemStatNote {
+    font-size: 11px;
+    margin-top: 4px;
+    color: var(--on-surface-variant);
+  }
+  .c--itemName {
+    font-weight: 400;
+    margin: 0;
+  }
+  .c--itemLookNo {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .c--itemPair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
   .c--itemMicro {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.06em;
     color: var(--on-surface-variant);
     text-transform: uppercase;
@@ -241,19 +294,19 @@
     width: 100%;
     min-width: 0;
   }
+  .c--itemField .ui-field__label,
+  .c--itemField > label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
   .c--itemField input,
   .c--itemField select {
-    appearance: none;
-    width: 100%;
-    min-height: 24px;
-    padding: 0;
-    border: 0;
-    background: transparent;
+    min-height: 44px;
+    background: var(--surface-lowest);
     color: var(--on-surface);
-    font: inherit;
     font-size: 14px;
     font-weight: 500;
-    outline-offset: 4px;
   }
   .c--itemRow {
     display: flex;
@@ -279,35 +332,32 @@
     border-radius: 8px;
     background: var(--surface-low);
     color: var(--on-surface-variant);
-    font-size: 10px;
+    font-size: 11px;
   }
-  .c--itemSwitch {
-    flex: none;
-    width: 44px;
-    height: 24px;
-    padding: 2px;
-    border: 0;
-    border-radius: 9999px;
-    background: var(--surface-highest);
-    cursor: pointer;
+  .c--itemCareList {
     display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0 0;
+    margin: 0;
+    list-style: none;
+  }
+  .c--itemSwitchRow {
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    transition: background 0.2s;
+    gap: 10px;
   }
-  .c--itemSwitch::before {
-    content: "";
-    width: 20px;
-    height: 20px;
-    border-radius: 9999px;
-    background: var(--surface-lowest);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
-    transition: transform 0.2s;
+  .c--itemSwitchText {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
   }
-  .c--itemSwitch[aria-checked="true"] {
-    background: var(--accent);
-  }
-  .c--itemSwitch[aria-checked="true"]::before {
-    transform: translateX(20px);
+  .c--itemSwitchLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--on-surface);
   }
   .c--itemSeasons {
     display: grid;
@@ -315,7 +365,7 @@
     gap: 6px;
   }
   .c--itemSeason {
-    min-height: 32px;
+    min-height: 44px;
     padding: 6px 2px;
     border: 0;
     border-radius: 8px;
@@ -325,15 +375,16 @@
     font-size: 11px;
     cursor: pointer;
   }
-  .c--itemSeason[aria-pressed="true"] {
+  .c--itemSeason[data-pressed] {
     background: var(--primary);
     color: var(--on-primary);
     font-weight: 600;
   }
-  .c--itemSeason[aria-pressed="false"].is-off {
+  .c--itemSeason[data-disabled] {
     background: var(--surface-low);
-    color: var(--outline-variant);
+    color: var(--on-surface-variant);
     text-decoration: line-through;
+    opacity: 0.7;
   }
   .c--itemLooks {
     display: flex;
@@ -341,6 +392,7 @@
     overflow-x: auto;
     padding: 0 20px 8px;
     margin: 0 -20px;
+    max-block-size: none;
   }
   .c--itemLook {
     flex: none;
@@ -369,7 +421,7 @@
     bottom: 6px;
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 9px;
+    font-size: 11px;
   }
   .c--itemLookCta {
     flex: none;
@@ -379,6 +431,8 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
+    height: auto;
+    min-height: 44px;
     padding: 16px;
     border: 0;
     border-radius: 12px;
@@ -397,6 +451,7 @@
     gap: 8px;
     width: 100%;
     height: 52px;
+    min-height: 52px;
     border: 0;
     border-radius: var(--radius-pill);
     background: var(--primary);
@@ -411,6 +466,7 @@
     align-items: center;
     gap: 4px;
     min-height: 44px;
+    padding: 0 8px;
     border: 0;
     background: none;
     font: inherit;
@@ -423,22 +479,30 @@
   .c--itemTextBtn.is-danger {
     color: var(--error);
   }
-  .c--itemToast {
-    position: fixed;
-    left: 50%;
-    bottom: 96px;
-    transform: translateX(-50%);
+  .c--itemToastViewport {
+    inset: auto 16px 96px 16px;
+    width: auto;
+    max-width: 24rem;
+    margin-inline: auto;
     z-index: 60;
+  }
+  .c--itemToastContent {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
-    border-radius: var(--radius-pill);
-    background: var(--inverse-surface);
-    color: var(--inverse-on-surface);
     font-size: 12px;
-    pointer-events: none;
-    box-shadow: var(--shadow-card);
+  }
+  .c--itemToastClose {
+    margin-inline-start: auto;
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
   }
   .c--item :focus-visible {
     outline: 2px solid var(--accent);
