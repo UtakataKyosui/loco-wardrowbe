@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ApiClientError, post } from "../api/client";
+import { AuthAlert, AuthCard, AuthField, AuthSubmit } from "./AuthCard";
 import { setToken } from "./token";
 
 interface LoginResponse {
@@ -30,51 +31,38 @@ export function Login() {
       setToken(res.token);
       navigate({ to: "/" });
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : "Failed to log in",
-      );
+      setError(err instanceof ApiClientError ? err.message : "Failed to log in");
     } finally {
       setIsPending(false);
     }
   }
 
   return (
-    <div>
-      <h1>Log in</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit" disabled={isPending}>
-          {isPending ? "Logging in…" : "Log in"}
-        </button>
+    <AuthCard title="Log in">
+      <form className="c--authForm" onSubmit={handleSubmit}>
+        <AuthField
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={setEmail}
+        />
+        <AuthField
+          id="password"
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={setPassword}
+        />
+        <AuthAlert message={error} />
+        <AuthSubmit isPending={isPending} idleLabel="Log in" pendingLabel="Logging in…" />
       </form>
-      {error && <p role="alert">{error}</p>}
-      <p>
-        Don&apos;t have an account? <Link to="/register">Sign up</Link>. You
-        will need to verify your email before you can log in.
+      <p className="c--authFooter">
+        Don&apos;t have an account? <Link to="/register">Sign up</Link>. You will need to verify
+        your email before you can log in.
       </p>
-    </div>
+    </AuthCard>
   );
 }

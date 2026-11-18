@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { verify } from "../api/generated/auth/auth";
+import { AuthAlert, AuthCard, AuthStatus } from "./AuthCard";
 import { takeTokenFromHash } from "./tokenFromHash";
 
-type State =
-  | { kind: "pending" }
-  | { kind: "verified" }
-  | { kind: "failed"; message: string };
+type State = { kind: "pending" } | { kind: "verified" } | { kind: "failed"; message: string };
 
 /** Landing page of the e-mail verification link (`/verify#<token>`). */
 export function Verify() {
@@ -41,18 +39,19 @@ export function Verify() {
   }, []);
 
   return (
-    <div>
-      <h1>Verify your email</h1>
-      {state.kind === "pending" && <p>Verifying…</p>}
+    <AuthCard title="Verify your email">
+      <AuthStatus busy={state.kind === "pending"}>
+        {state.kind === "pending" && <p className="c--authText">Verifying…</p>}
+        {state.kind === "verified" && (
+          <p className="c--authText">Your email address is verified.</p>
+        )}
+      </AuthStatus>
+      <AuthAlert message={state.kind === "failed" ? state.message : null} />
       {state.kind === "verified" && (
-        <>
-          <p>Your email address is verified.</p>
-          <p>
-            <Link to="/login">Log in</Link>
-          </p>
-        </>
+        <p className="c--authFooter">
+          <Link to="/login">Log in</Link>
+        </p>
       )}
-      {state.kind === "failed" && <p role="alert">{state.message}</p>}
-    </div>
+    </AuthCard>
   );
 }

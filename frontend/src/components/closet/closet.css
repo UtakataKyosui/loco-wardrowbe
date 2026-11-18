@@ -1,0 +1,228 @@
+@layer lism-custom {
+  .c--closetSearch {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  .c--closetSearch .c--icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--on-surface-variant);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .c--closetSearch input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 16px 0 40px;
+    border-radius: 0.75rem;
+    background: var(--surface-low);
+    color: var(--on-surface);
+    font-size: 14px;
+  }
+  .c--closetCount {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 0.75rem;
+    background: var(--surface-low);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    color: var(--on-surface-variant);
+  }
+  .c--closetCount b {
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 4px;
+    font-size: 12px;
+  }
+  .c--closetScroll {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    margin-inline: -20px;
+    padding-inline: 20px;
+    scrollbar-width: none;
+  }
+  .c--closetScroll::-webkit-scrollbar {
+    display: none;
+  }
+  .c--closetScroll.ui-toggle-group {
+    flex-wrap: nowrap;
+  }
+  .c--chip {
+    flex: none;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-low);
+    color: var(--on-surface);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    border-color: transparent;
+  }
+  .c--chip small {
+    font-size: 10px;
+    opacity: 0.75;
+  }
+  .c--chip[data-pressed] {
+    background: var(--primary);
+    color: var(--on-primary);
+    border-color: var(--primary);
+    box-shadow: none;
+  }
+  .c--sortBtn {
+    flex: none;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 0.5rem;
+    background: var(--surface-low);
+    color: var(--on-surface-variant);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    border-color: transparent;
+  }
+  .c--sortBtn[data-pressed] {
+    background: var(--surface-container);
+    color: var(--on-surface);
+    border-color: var(--outline);
+    box-shadow: none;
+  }
+  .c--closetGroupLabel {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+  }
+  .c--closetList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s20, 20px);
+  }
+  .c--itemCard {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-lowest);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--outline-variant);
+  }
+  .c--itemThumb {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    padding: 12px;
+    background: var(--surface-low);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .c--itemLink {
+    color: inherit;
+    text-decoration: none;
+  }
+  .c--itemLink::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .c--itemThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
+  @media (prefers-color-scheme: dark) {
+    .c--itemThumb img {
+      mix-blend-mode: normal;
+    }
+  }
+  .c--favBtn.ui-toggle {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 2;
+    background: transparent;
+    border-color: transparent;
+    color: var(--outline);
+  }
+  .c--favBtn .c--favDot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-lowest);
+    border: 1px solid var(--outline);
+  }
+  .c--favBtn[data-pressed] {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--accent);
+  }
+  .c--favBtn[data-pressed] .c--favDot {
+    border-color: var(--accent);
+  }
+  .c--itemTag.ui-badge {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 2px 8px;
+    border-radius: 0.25rem;
+    background: var(--surface-lowest);
+    color: var(--on-surface);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+  .c--itemMeta {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+  }
+  .c--wear {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    border-radius: 0.25rem;
+    background: var(--surface-low);
+    color: var(--on-surface-variant);
+  }
+  .c--wear.is-hot {
+    color: var(--accent);
+  }
+  .c--closetEmpty {
+    grid-column: 1 / -1;
+  }
+  .c--closetFab.ui-button {
+    position: fixed;
+    right: max(20px, calc(50% - 14rem + 20px));
+    bottom: 96px;
+    z-index: 40;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 20px 0 16px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--primary);
+    color: var(--on-primary);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+    cursor: pointer;
+  }
+}

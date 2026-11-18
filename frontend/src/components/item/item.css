@@ -1,0 +1,534 @@
+@layer lism-custom {
+  .c--item {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding-bottom: 40px;
+    color: var(--on-surface);
+  }
+  .c--itemSub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    margin-bottom: 16px;
+  }
+  .c--itemBack {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    color: var(--on-surface);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .c--itemRoundBtn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background: var(--surface-container);
+    color: var(--on-surface-variant);
+    cursor: pointer;
+  }
+  .c--itemRoundBtn[aria-pressed="true"] {
+    color: var(--accent);
+  }
+  .c--itemCard {
+    background: var(--surface-low);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  .c--itemPerf {
+    --ui-card-padding: 16px;
+    --ui-card-gap: 12px;
+    --ui-card-background: var(--surface-low);
+    --ui-card-border: transparent;
+    padding: 16px;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+  .c--itemPerfTitle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--on-surface);
+  }
+  .c--itemTile {
+    background: var(--surface-lowest);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+    padding: 14px;
+  }
+  .c--itemGallery {
+    padding: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .c--itemStage {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: 12px;
+    background: var(--surface-lowest);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+  .c--itemStage img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  .c--itemGlass {
+    background: color-mix(in srgb, var(--surface-lowest) 90%, transparent);
+    backdrop-filter: blur(12px);
+    color: var(--on-surface);
+  }
+  .c--itemBadge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--on-surface-variant);
+  }
+  .c--itemStageActions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .c--itemStageBtn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+  .c--itemCounter {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    background: color-mix(in srgb, var(--primary) 70%, transparent);
+    color: var(--on-primary);
+  }
+  .c--itemThumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0 4px;
+    overflow-x: auto;
+  }
+  .c--itemThumbGroup {
+    display: flex;
+    gap: 8px;
+  }
+  .c--itemThumb {
+    flex: none;
+    width: 48px;
+    min-width: 48px;
+    height: 56px;
+    min-height: 56px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface-lowest);
+    opacity: 0.7;
+    cursor: pointer;
+  }
+  .c--itemThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .c--itemThumb[data-pressed] {
+    opacity: 1;
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .c--itemThumbAdd {
+    flex: none;
+    width: 48px;
+    height: 56px;
+    min-height: 56px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: var(--surface-container);
+    color: var(--on-surface-variant);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .c--itemEyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .c--itemChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-container);
+    color: var(--on-surface);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .c--itemChip.is-accent {
+    background: var(--accent-soft);
+    color: var(--on-accent-soft);
+    text-transform: none;
+    letter-spacing: 0.04em;
+  }
+  .c--itemDot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+  }
+  .c--itemLinkBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .c--itemStats {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .c--itemStat {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--surface-lowest);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+    min-width: 0;
+  }
+  .c--itemStat dd {
+    margin: 0;
+  }
+  .c--itemStatNote {
+    font-size: 11px;
+    margin-top: 4px;
+    color: var(--on-surface-variant);
+  }
+  .c--itemName {
+    font-weight: 400;
+    margin: 0;
+  }
+  .c--itemLookNo {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .c--itemPair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .c--itemMicro {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+  }
+  .c--itemNum {
+    font-family: var(--ff--accent);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--primary);
+  }
+  .c--itemField {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+  }
+  .c--itemField .ui-field__label,
+  .c--itemField > label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .c--itemField input,
+  .c--itemField select {
+    min-height: 44px;
+    background: var(--surface-lowest);
+    color: var(--on-surface);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .c--itemRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .c--itemIconCircle {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border-radius: 9999px;
+    background: var(--surface-container);
+    color: var(--on-surface-variant);
+  }
+  .c--itemCare {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: var(--surface-low);
+    color: var(--on-surface-variant);
+    font-size: 11px;
+  }
+  .c--itemCareList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0 0;
+    margin: 0;
+    list-style: none;
+  }
+  .c--itemSwitchRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+  .c--itemSwitchText {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .c--itemSwitchLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--on-surface);
+  }
+  .c--itemSeasons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .c--itemSeason {
+    min-height: 44px;
+    padding: 6px 2px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--surface-container);
+    color: var(--on-surface-variant);
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .c--itemSeason[data-pressed] {
+    background: var(--primary);
+    color: var(--on-primary);
+    font-weight: 600;
+  }
+  .c--itemSeason[data-disabled] {
+    background: var(--surface-low);
+    color: var(--on-surface-variant);
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+  .c--itemLooks {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 0 20px 8px;
+    margin: 0 -20px;
+    max-block-size: none;
+  }
+  .c--itemLook {
+    flex: none;
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    background: var(--surface-lowest);
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  .c--itemLook .pic {
+    position: relative;
+    height: 192px;
+    background: var(--surface-low);
+  }
+  .c--itemLook img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .c--itemLook .tag {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .c--itemLookCta {
+    flex: none;
+    width: 144px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: auto;
+    min-height: 44px;
+    padding: 16px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--surface-low);
+    color: var(--primary);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+  }
+  .c--itemSave {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 52px;
+    min-height: 52px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--primary);
+    color: var(--on-primary);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .c--itemTextBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+  }
+  .c--itemTextBtn.is-danger {
+    color: var(--error);
+  }
+  .c--itemToastViewport {
+    inset: auto 16px 96px 16px;
+    width: auto;
+    max-width: 24rem;
+    margin-inline: auto;
+    z-index: 60;
+  }
+  .c--itemToastContent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .c--itemToastClose {
+    margin-inline-start: auto;
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .c--item :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Dark: hairline borders instead of flat tonal fills, heavier shadows */
+  @media (prefers-color-scheme: dark) {
+    .c--itemCard,
+    .c--itemTile,
+    .c--itemStat,
+    .c--itemLook,
+    .c--itemRoundBtn {
+      border: 1px solid var(--outline-variant);
+      box-shadow: var(--shadow-card);
+    }
+    .c--itemStage {
+      border: 1px solid var(--outline-variant);
+    }
+    .c--itemChip {
+      border: 1px solid var(--outline-variant);
+      background: transparent;
+    }
+    .c--itemChip.is-accent {
+      background: var(--accent-soft);
+      border-color: transparent;
+    }
+  }
+}
