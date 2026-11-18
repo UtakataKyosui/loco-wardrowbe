@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { ApiClientError, post } from "../api/client";
+import { AuthCard, AuthField } from "./AuthCard";
 
 export function Register() {
   const [name, setName] = useState("");
@@ -33,67 +34,57 @@ export function Register() {
 
   if (isDone) {
     return (
-      <div>
-        <h1>Check your email</h1>
-        <p>
+      <AuthCard title="Check your email">
+        <p className="c--authText">
           If that address is available, a verification link is on its way. You
           need to verify before you can log in.
         </p>
-        <p>
+        <p className="c--authFooter">
           <Link to="/login">Back to log in</Link>
         </p>
-      </div>
+      </AuthCard>
     );
   }
 
   return (
-    <div>
-      <h1>Sign up</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name">Name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            autoComplete="name"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit" disabled={isPending}>
+    <AuthCard title="Sign up">
+      <form className="c--authForm" onSubmit={handleSubmit}>
+        <AuthField
+          id="name"
+          label="Name"
+          type="text"
+          autoComplete="name"
+          value={name}
+          onChange={setName}
+        />
+        <AuthField
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={setEmail}
+        />
+        <AuthField
+          id="password"
+          label="Password"
+          type="password"
+          autoComplete="new-password"
+          value={password}
+          onChange={setPassword}
+        />
+        <button className="c--authButton" type="submit" disabled={isPending}>
           {isPending ? "Signing up…" : "Sign up"}
         </button>
       </form>
-      {error && <p role="alert">{error}</p>}
-      <p>
+      {error && (
+        <p className="c--authAlert" role="alert">
+          {error}
+        </p>
+      )}
+      <p className="c--authFooter">
         Already have an account? <Link to="/login">Log in</Link>
       </p>
-    </div>
+    </AuthCard>
   );
 }

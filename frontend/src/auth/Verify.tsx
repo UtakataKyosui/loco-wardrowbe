@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { verify } from "../api/generated/auth/auth";
+import { AuthCard } from "./AuthCard";
 import { takeTokenFromHash } from "./tokenFromHash";
 
 type State =
@@ -41,18 +42,21 @@ export function Verify() {
   }, []);
 
   return (
-    <div>
-      <h1>Verify your email</h1>
-      {state.kind === "pending" && <p>Verifying…</p>}
+    <AuthCard title="Verify your email">
+      {state.kind === "pending" && <p className="c--authText">Verifying…</p>}
       {state.kind === "verified" && (
         <>
-          <p>Your email address is verified.</p>
-          <p>
+          <p className="c--authText">Your email address is verified.</p>
+          <p className="c--authFooter">
             <Link to="/login">Log in</Link>
           </p>
         </>
       )}
-      {state.kind === "failed" && <p role="alert">{state.message}</p>}
-    </div>
+      {state.kind === "failed" && (
+        <p className="c--authAlert" role="alert">
+          {state.message}
+        </p>
+      )}
+    </AuthCard>
   );
 }
