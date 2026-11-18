@@ -24,15 +24,15 @@ server:
   middlewares: 
     fallback:
       enable: false
-    # Tests do not serve the frontend; the SSR build has no frontend/dist/index.html.
+    # Tests do not serve the frontend; the frontend build is not required to exist.
     static:
       enable: false
       must_exist: true
       precompressed: false
       folder:
         uri: "/"
-        path: "frontend/dist"
-      fallback: "frontend/dist/index.html"
+        path: "frontend/dist/client"
+      fallback: "frontend/dist/client/index.html"
 
 # Worker Configuration
 workers:

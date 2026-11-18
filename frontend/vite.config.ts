@@ -23,7 +23,9 @@ export default defineConfig(({ mode }) => {
     },
     plugins: lazyPlugins(() => [
       lismCss(),
-      tanstackStart(),
+      // Loco serves `dist/client` as static files, so build a SPA shell
+      // (`index.html`) instead of an SSR bundle.
+      tanstackStart({ spa: { enabled: true, prerender: { outputPath: "/index" } } }),
       // react's vite plugin must come after start's vite plugin
       react(),
     ]),
