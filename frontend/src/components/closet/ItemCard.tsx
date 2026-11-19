@@ -10,8 +10,8 @@ type Props = { item: ClothingItem; onToggleFavorite: (id: string) => void };
 // (stretched over the card); the favourite Toggle sits above it.
 export function ItemCard({ item, onToggleFavorite }: Props) {
   return (
-    <Box className="c--itemCard">
-      <div className="c--itemThumb">
+    <Box className="c--closetCard">
+      <div className="c--closetThumb">
         {/* Decorative: the adjacent heading already names the item. */}
         {item.imageUrl && <img src={item.imageUrl} alt="" loading="lazy" />}
         <Toggle

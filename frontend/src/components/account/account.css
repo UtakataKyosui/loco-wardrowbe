@@ -1,0 +1,54 @@
+@layer lism-custom {
+  .c--accountCard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 1rem;
+    background: var(--surface-lowest);
+    border: 1px solid var(--outline-variant);
+  }
+  .c--accountHead {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+  }
+  .c--accountRow {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+  }
+  .c--accountRow dt {
+    font-size: 11px;
+    color: var(--on-surface-variant);
+  }
+  .c--accountRow dd {
+    margin: 0;
+    font-size: 15px;
+    color: var(--on-surface);
+    overflow-wrap: anywhere;
+  }
+  .c--accountText {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--on-surface-variant);
+  }
+  .c--accountProfile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .c--topBarProfile {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    color: inherit;
+  }
+}

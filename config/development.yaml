@@ -34,8 +34,8 @@ server:
       precompressed: false
       folder:
         uri: "/"
-        path: "frontend/dist"
-      fallback: "frontend/dist/index.html"
+        path: "frontend/dist/client"
+      fallback: "frontend/dist/client/index.html"
 
 # Worker Configuration
 workers:

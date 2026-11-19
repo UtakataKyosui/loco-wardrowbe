@@ -1,0 +1,47 @@
+@layer lism-custom {
+  .c--itemForm {
+    padding-bottom: 2rem;
+  }
+  .c--itemFormPhoto {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: var(--surface-low);
+  }
+  .c--itemFormPhoto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .c--itemFormPhotoEmpty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--on-surface-variant);
+  }
+  .c--itemFormSeason {
+    flex: 1;
+    min-height: 44px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-low);
+    color: var(--on-surface);
+    font-size: 13px;
+    border-color: transparent;
+  }
+  .c--itemFormSeason[data-pressed] {
+    background: var(--primary);
+    color: var(--on-primary);
+    border-color: var(--primary);
+    box-shadow: none;
+  }
+  .c--itemFormSwitch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+  }
+}

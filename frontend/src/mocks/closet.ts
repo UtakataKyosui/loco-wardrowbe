@@ -101,3 +101,8 @@ export const categoryFilters: { key: "all" | Category; label: string; count: num
 ];
 
 export const sortOptions = ["最近追加順", "着用頻度順", "シーズン: ALL", "カラー"];
+
+/** Prepends a new item. This is the seam to replace with the items API call. */
+export function addClosetItem(item: ClothingItem): void {
+  closetItems.unshift(item);
+}
