@@ -22,6 +22,8 @@ Stitch のスクリーンショットと比較して差分を直す。
 
 - 衣類データの API 接続（バックエンドは認証のみ。Loco の generator 経由で別途実装）
 - アイテム詳細は `$itemId` を無視してモックを表示している
+- アイテム追加フォーム（`/closet/new`）の保存は `mocks/closet.ts` の `addClosetItem` でメモリに積むだけ。リロードで消える。items API ができたらここを差し替える
+- アカウント設定（`/account`）は `GET /api/auth/current` の表示とパスワード再設定メール送信のみ。名前・メールの変更とパスワード変更の API は未実装
 
 ## アクセシビリティ（Utakata-UI 化の後）
 

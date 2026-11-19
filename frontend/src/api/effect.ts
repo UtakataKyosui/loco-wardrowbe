@@ -1,5 +1,9 @@
 import { Data, Effect } from "effect";
-import type { ApiResponse } from "./mutator";
+
+/** Any generated response: a union of per-status `{ data, status }` shapes. */
+type AnyResponse = { data: unknown; status: number };
+type SuccessStatus = 200 | 201 | 202 | 203 | 204 | 205 | 206;
+type SuccessData<R extends AnyResponse> = Extract<R, { status: SuccessStatus }>["data"];
 
 /** The server answered with a non-2xx status. `body` is the parsed error body. */
 export class HttpError extends Data.TaggedError("HttpError")<{
@@ -34,9 +38,9 @@ function messageOf(body: unknown, status: number): string {
  *   const user = yield* callApi(() => current());
  *   Effect.catchTag("HttpError", (e) => ...)
  */
-export const callApi = <T>(
-  call: () => Promise<ApiResponse<T>>,
-): Effect.Effect<T, ApiError> =>
+export const callApi = <R extends AnyResponse>(
+  call: () => Promise<R>,
+): Effect.Effect<SuccessData<R>, ApiError> =>
   Effect.tryPromise({
     try: () => call(),
     catch: (cause) =>
@@ -47,7 +51,7 @@ export const callApi = <T>(
   }).pipe(
     Effect.flatMap((res) =>
       res.status >= 200 && res.status < 300
-        ? Effect.succeed(res.data)
+        ? Effect.succeed(res.data as SuccessData<R>)
         : Effect.fail(
             new HttpError({
               status: res.status,

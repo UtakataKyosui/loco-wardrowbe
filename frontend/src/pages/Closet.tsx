@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Button, Empty, Field, Input, ToggleGroup } from "@utakata-ui/react";
 import { Flex, Stack } from "lism-css/react";
 import { MaterialIcon } from "../components/MaterialIcon";
@@ -106,7 +107,7 @@ export function Closet() {
         <span>アーカイブ同期完了・今季{closetTotal}点登録中</span>
       </Flex>
 
-      <Button className="c--closetFab" type="button">
+      <Button className="c--closetFab" render={<Link to="/closet/new" />} nativeButton={false}>
         <MaterialIcon name="add_a_photo" size={20} />
         アイテム追加
       </Button>

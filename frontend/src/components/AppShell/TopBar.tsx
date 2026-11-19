@@ -1,9 +1,11 @@
 import type { CSSProperties } from "react";
+import { Link } from "@tanstack/react-router";
 import { Avatar, Button } from "@utakata-ui/react";
 import { Flex, Stack, Text } from "lism-css/react";
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated";
 import { useLogout } from "../../auth/useLogout";
 import { MaterialIcon } from "../MaterialIcon";
+import "../account/account.css";
 
 export function TopBar({ subLabel }: { subLabel: string }) {
   const isAuthenticated = useIsAuthenticated();
@@ -43,21 +45,22 @@ export function TopBar({ subLabel }: { subLabel: string }) {
             <MaterialIcon name="logout" />
           </Button>
         )}
-        <Avatar.Root
-          size="sm"
-          role="img"
-          aria-label="プロフィール"
-          style={
-            {
-              "--ui-avatar-size": "32px",
-              "--ui-avatar-background": "var(--surface-highest)",
-            } as CSSProperties
-          }
-        >
-          <Avatar.Fallback aria-hidden="true" style={{ color: "var(--on-surface-variant)" }}>
-            <MaterialIcon name="person" size={18} />
-          </Avatar.Fallback>
-        </Avatar.Root>
+        <Link to="/account" className="c--topBarProfile" aria-label="アカウント設定">
+          <Avatar.Root
+            size="sm"
+            aria-hidden="true"
+            style={
+              {
+                "--ui-avatar-size": "32px",
+                "--ui-avatar-background": "var(--surface-highest)",
+              } as CSSProperties
+            }
+          >
+            <Avatar.Fallback style={{ color: "var(--on-surface-variant)" }}>
+              <MaterialIcon name="person" size={18} />
+            </Avatar.Fallback>
+          </Avatar.Root>
+        </Link>
       </Flex>
     </Flex>
   );

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as LoginRouteImport } from './routes/login'
@@ -19,10 +20,16 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ClosetIndexRouteImport } from './routes/closet.index'
 import { Route as ClosetItemIdRouteImport } from './routes/closet.$itemId'
+import { Route as ClosetNewRouteImport } from './routes/closet.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BuilderRoute = BuilderRouteImport.update({
@@ -66,13 +73,19 @@ const ClosetIndexRoute = ClosetIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClosetItemIdRoute = ClosetItemIdRouteImport.update({
-  id: '/$itemId',
-  path: '/$itemId',
-  getParentRoute: () => ClosetRoute,
+  id: '/closet/$itemId',
+  path: '/closet/$itemId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClosetNewRoute = ClosetNewRouteImport.update({
+  id: '/closet/new',
+  path: '/closet/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/builder': typeof BuilderRoute
   '/calendar': typeof CalendarRoute
   '/login': typeof LoginRoute
@@ -81,10 +94,12 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
+  '/closet/new': typeof ClosetNewRoute
   '/closet/': typeof ClosetIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/builder': typeof BuilderRoute
   '/calendar': typeof CalendarRoute
   '/login': typeof LoginRoute
@@ -93,11 +108,13 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
+  '/closet/new': typeof ClosetNewRoute
   '/closet': typeof ClosetIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/builder': typeof BuilderRoute
   '/calendar': typeof CalendarRoute
   '/login': typeof LoginRoute
@@ -106,12 +123,14 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
+  '/closet/new': typeof ClosetNewRoute
   '/closet/': typeof ClosetIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/builder'
     | '/calendar'
     | '/login'
@@ -120,10 +139,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/verify'
     | '/closet/$itemId'
+    | '/closet/new'
     | '/closet/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/builder'
     | '/calendar'
     | '/login'
@@ -132,10 +153,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/verify'
     | '/closet/$itemId'
+    | '/closet/new'
     | '/closet'
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/builder'
     | '/calendar'
     | '/login'
@@ -144,11 +167,13 @@ export interface FileRouteTypes {
     | '/register'
     | '/verify'
     | '/closet/$itemId'
+    | '/closet/new'
     | '/closet/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   BuilderRoute: typeof BuilderRoute
   CalendarRoute: typeof CalendarRoute
   LoginRoute: typeof LoginRoute
@@ -156,6 +181,8 @@ export interface RootRouteChildren {
   MagicLinkRoute: typeof MagicLinkRoute
   RegisterRoute: typeof RegisterRoute
   VerifyRoute: typeof VerifyRoute
+  ClosetItemIdRoute: typeof ClosetItemIdRoute
+  ClosetNewRoute: typeof ClosetNewRoute
   ClosetIndexRoute: typeof ClosetIndexRoute
 }
 
@@ -166,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/builder': {
@@ -226,16 +260,24 @@ declare module '@tanstack/react-router' {
     }
     '/closet/$itemId': {
       id: '/closet/$itemId'
-      path: '/$itemId'
+      path: '/closet/$itemId'
       fullPath: '/closet/$itemId'
       preLoaderRoute: typeof ClosetItemIdRouteImport
-      parentRoute: typeof ClosetRoute
+      parentRoute: typeof rootRouteImport
+    }
+    '/closet/new': {
+      id: '/closet/new'
+      path: '/closet/new'
+      fullPath: '/closet/new'
+      preLoaderRoute: typeof ClosetNewRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   BuilderRoute: BuilderRoute,
   CalendarRoute: CalendarRoute,
   LoginRoute: LoginRoute,
@@ -243,6 +285,8 @@ const rootRouteChildren: RootRouteChildren = {
   MagicLinkRoute: MagicLinkRoute,
   RegisterRoute: RegisterRoute,
   VerifyRoute: VerifyRoute,
+  ClosetItemIdRoute: ClosetItemIdRoute,
+  ClosetNewRoute: ClosetNewRoute,
   ClosetIndexRoute: ClosetIndexRoute,
 }
 export const routeTree = rootRouteImport
