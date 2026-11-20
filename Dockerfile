@@ -7,7 +7,7 @@ COPY frontend frontend
 COPY openapi openapi
 RUN pnpm --dir frontend build
 
-FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-1-bookworm AS chef
 WORKDIR /app
 
 FROM chef AS planner
