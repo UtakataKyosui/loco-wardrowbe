@@ -5,6 +5,7 @@ COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml 
 RUN pnpm --dir frontend install --frozen-lockfile
 COPY frontend frontend
 COPY openapi openapi
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 RUN pnpm --dir frontend build
 
 FROM lukemathwalker/cargo-chef:latest-rust-1-bookworm AS chef
