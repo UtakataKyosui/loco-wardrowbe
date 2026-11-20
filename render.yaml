@@ -24,7 +24,7 @@ services:
           name: wardrowbe-db
           property: connectionString
       - key: JWT_SECRET
-        generateValue: true
+        sync: false
       - key: HOST
         sync: false
       - key: MAILER_HOST
