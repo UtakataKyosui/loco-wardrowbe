@@ -1,0 +1,10 @@
+.git
+.github
+.claude
+target
+frontend/node_modules
+frontend/dist
+config/local.yaml
+config/*.local.yaml
+*.sqlite
+*.sqlite-*
