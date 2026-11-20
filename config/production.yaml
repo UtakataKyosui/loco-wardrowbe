@@ -7,8 +7,9 @@
 # secret or a localhost database is worse than one that refuses to boot.
 #
 # The variables this file requires:
-#   DATABASE_URL, JWT_SECRET, HOST, and the MAILER_* / REDIS_URL set below,
-#   depending on which features you generated.
+#   DATABASE_URL, JWT_SECRET, HOST (or VERCEL_PROJECT_PRODUCTION_URL on
+#   Vercel), and the MAILER_* / REDIS_URL set below, depending on which
+#   features you generated.
 
 # Application logging configuration
 logger:
@@ -36,7 +37,10 @@ server:
   binding: <%= get_env(name="BINDING", default="0.0.0.0") %>
   # The UI hostname or IP address that mailers will point to.
   # Required: links in outgoing mail have to name the real host.
-  host: <%= get_env(name="HOST") %>
+  # `HOST` wins when set. On Vercel it falls back to the production domain that
+  # Vercel exposes as `VERCEL_PROJECT_PRODUCTION_URL` (no scheme, so `https://`
+  # is prepended). With neither set, startup fails.
+  host: <% if get_env(name="HOST", default="") != "" %><%= get_env(name="HOST") %><% else %>https://<%= get_env(name="VERCEL_PROJECT_PRODUCTION_URL") %><% endif %>
   # Out of the box middleware configuration. to disable middleware you can changed the `enable` field to `false` of comment the middleware block
   middlewares:
     fallback:
