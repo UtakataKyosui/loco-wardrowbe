@@ -175,3 +175,52 @@ async fn an_unreachable_jwks_is_unavailable_not_unauthorized() {
         "got {result:?}"
     );
 }
+
+#[tokio::test]
+async fn concurrent_requests_for_an_unknown_key_fetch_once() {
+    let (url, hits) = serve_jwks(keys().jwks_json()).await;
+    let verifier = Arc::new(remote(&url));
+    let forged = keys().sign("rotated-key", &claims("u"));
+
+    let handles: Vec<_> = (0..20)
+        .map(|_| {
+            let verifier = Arc::clone(&verifier);
+            let token = forged.clone();
+            tokio::spawn(async move { verifier.verify(&token).await })
+        })
+        .collect();
+    for handle in handles {
+        assert_rejected(&handle.await.unwrap());
+    }
+    assert_eq!(hits.load(Ordering::SeqCst), 1, "20 requests, one fetch");
+}
+
+#[tokio::test]
+async fn a_failed_fetch_starts_the_cool_down_too() {
+    let hits = Arc::new(AtomicUsize::new(0));
+    let counter = Arc::clone(&hits);
+    let app = Router::new().route(
+        "/jwks.json",
+        get(move || {
+            counter.fetch_add(1, Ordering::SeqCst);
+            async { axum::http::StatusCode::INTERNAL_SERVER_ERROR }
+        }),
+    );
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}/jwks.json", listener.local_addr().unwrap());
+    tokio::spawn(async move { axum::serve(listener, app).await });
+
+    let verifier = remote(&url);
+    let token = keys().token(&claims("u"));
+
+    // Within the cool-down a failed fetch is not retried, and every caller is
+    // told the keys are unavailable (not that the key is unknown).
+    for _ in 0..5 {
+        let result = verifier.verify(&token).await;
+        assert!(
+            matches!(result, Err(VerifyError::Unavailable(_))),
+            "{result:?}"
+        );
+    }
+    assert_eq!(hits.load(Ordering::SeqCst), 1, "five requests, one attempt");
+}

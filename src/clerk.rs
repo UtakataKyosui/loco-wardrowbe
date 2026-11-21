@@ -196,7 +196,11 @@ enum KeySource {
 
 struct Keys {
     set: JwkSet,
-    fetched_at: Option<Instant>,
+    /// When the last fetch was started, successful or not.
+    attempted_at: Option<Instant>,
+    /// Whether that fetch failed. During the cool-down a failed fetch is
+    /// reported as unavailable again, not as an unknown key.
+    last_failed: bool,
 }
 
 /// Verifies Clerk session tokens. Built once at boot and kept in
@@ -206,6 +210,8 @@ pub struct ClerkVerifier {
     authorized_parties: Vec<String>,
     source: KeySource,
     keys: RwLock<Keys>,
+    /// Lets one request at a time fetch the JWKS; the rest wait for its result.
+    refresh: tokio::sync::Mutex<()>,
 }
 
 impl ClerkVerifier {
@@ -228,8 +234,10 @@ impl ClerkVerifier {
             },
             keys: RwLock::new(Keys {
                 set: JwkSet { keys: Vec::new() },
-                fetched_at: None,
+                attempted_at: None,
+                last_failed: false,
             }),
+            refresh: tokio::sync::Mutex::new(()),
         })
     }
 
@@ -242,8 +250,10 @@ impl ClerkVerifier {
             source: KeySource::Static,
             keys: RwLock::new(Keys {
                 set,
-                fetched_at: None,
+                attempted_at: None,
+                last_failed: false,
             }),
+            refresh: tokio::sync::Mutex::new(()),
         }
     }
 
@@ -303,17 +313,45 @@ impl ClerkVerifier {
         let KeySource::Remote { url, client } = &self.source else {
             return Ok(None);
         };
-        if self.recently_fetched() {
-            return Ok(None);
+
+        // One fetch at a time: requests that arrive during it wait here, then
+        // find the keys it brought (or its cool-down) instead of fetching again.
+        let _refreshing = self.refresh.lock().await;
+        if let Some(jwk) = self.cached(kid) {
+            return Ok(Some(jwk));
         }
+        if let Some(failed) = self.cooling_down() {
+            return if failed {
+                Err(VerifyError::Unavailable(
+                    "the Clerk JWKS could not be fetched a moment ago".to_owned(),
+                ))
+            } else {
+                Ok(None)
+            };
+        }
+
+        // Record the attempt before the network call, so a failure (or a
+        // cancelled request) also starts the cool-down.
+        self.write_keys(|keys| {
+            keys.attempted_at = Some(Instant::now());
+            keys.last_failed = true;
+        });
         let set = fetch_jwks(client, url).await?;
-        let mut keys = self
-            .keys
-            .write()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        keys.set = set;
-        keys.fetched_at = Some(Instant::now());
-        Ok(keys.set.find(kid).cloned())
+        let jwk = set.find(kid).cloned();
+        self.write_keys(|keys| {
+            keys.set = set;
+            keys.last_failed = false;
+        });
+        Ok(jwk)
+    }
+
+    fn write_keys(&self, update: impl FnOnce(&mut Keys)) {
+        update(
+            &mut self
+                .keys
+                .write()
+                .unwrap_or_else(std::sync::PoisonError::into_inner),
+        );
     }
 
     fn cached(&self, kid: &str) -> Option<Jwk> {
@@ -325,12 +363,16 @@ impl ClerkVerifier {
             .cloned()
     }
 
-    fn recently_fetched(&self) -> bool {
-        self.keys
+    /// `Some(failed)` while the last fetch attempt is younger than
+    /// [`MIN_REFRESH_INTERVAL`]; `None` when a new one is allowed.
+    fn cooling_down(&self) -> Option<bool> {
+        let keys = self
+            .keys
             .read()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .fetched_at
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        keys.attempted_at
             .is_some_and(|at| at.elapsed() < MIN_REFRESH_INTERVAL)
+            .then_some(keys.last_failed)
     }
 }
 
