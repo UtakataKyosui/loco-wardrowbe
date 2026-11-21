@@ -10,3 +10,8 @@ peerDependencyRules:
     - vite
   allowedVersions:
     vite: "*"
+onlyBuiltDependencies:
+  - esbuild
+ignoredBuiltDependencies:
+  - "@clerk/shared"
+  - "@parcel/watcher"
