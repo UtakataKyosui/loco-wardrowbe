@@ -3,8 +3,10 @@
 
 use axum::http::{HeaderName, HeaderValue};
 use loco_rs::testing::prelude::*;
+use sea_orm::{EntityTrait, PaginatorTrait};
 use serde_json::json;
 use serial_test::serial;
+use std::sync::Arc;
 use wardrowbe::{
     app::App,
     clerk::ClerkVerifier,
@@ -23,7 +25,11 @@ fn bearer(token: &str) -> (HeaderName, HeaderValue) {
 /// Makes the app trust the test key pair instead of fetching Clerk's.
 fn trust_test_keys(ctx: &loco_rs::app::AppContext) {
     ctx.shared_store
-        .insert(ClerkVerifier::with_static_keys(ISSUER, &[], keys().jwks()));
+        .insert(Arc::new(ClerkVerifier::with_static_keys(
+            ISSUER,
+            &[],
+            keys().jwks(),
+        )));
 }
 
 #[tokio::test]
@@ -75,7 +81,6 @@ async fn the_same_clerk_user_is_one_row() {
             .json();
         assert_eq!(first["pid"], second["pid"]);
 
-        use sea_orm::{EntityTrait, PaginatorTrait};
         assert_eq!(users::Entity::find().count(&ctx.db).await.unwrap(), 1);
     })
     .await;

@@ -17,7 +17,7 @@
 //! (Sessions → Customize session token).
 
 use std::{
-    sync::RwLock,
+    sync::{Arc, RwLock},
     time::{Duration, Instant},
 };
 
@@ -200,7 +200,7 @@ struct Keys {
 }
 
 /// Verifies Clerk session tokens. Built once at boot and kept in
-/// `ctx.shared_store`.
+/// `ctx.shared_store` as an `Arc<ClerkVerifier>`.
 pub struct ClerkVerifier {
     issuer: String,
     authorized_parties: Vec<String>,
@@ -370,17 +370,16 @@ where
         let token = bearer_token(parts)
             .ok_or_else(|| Error::Unauthorized("missing bearer token".to_owned()))?;
 
-        let claims = {
-            let verifier = ctx.shared_store.get_ref::<ClerkVerifier>().ok_or_else(|| {
+        // A clone of the `Arc`, so the store's lock is not held across the await.
+        let verifier = ctx
+            .shared_store
+            .get::<Arc<ClerkVerifier>>()
+            .ok_or_else(|| {
                 Error::from(VerifyError::Unavailable(
-                    "Clerk is not configured (settings.clerk.issuer is empty)".to_owned(),
+                    "Clerk is not configured (no issuer or publishable key)".to_owned(),
                 ))
             })?;
-            // Release the store's lock before awaiting.
-            let verifier: &ClerkVerifier = &verifier;
-            let claims = verifier.verify(token).await;
-            claims.map_err(Error::from)?
-        };
+        let claims = verifier.verify(token).await.map_err(Error::from)?;
 
         let user = users::Model::find_or_create_by_clerk(&ctx.db, &claims)
             .await

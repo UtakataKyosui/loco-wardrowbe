@@ -6,6 +6,8 @@
 //! without a Clerk account; every authenticated route then answers 500 and the
 //! log says why. Production refuses to start without an issuer.
 
+use std::sync::Arc;
+
 use async_trait::async_trait;
 use axum::Router as AxumRouter;
 use loco_rs::{
@@ -37,7 +39,8 @@ impl Initializer for ClerkInitializer {
             return Ok(router);
         }
 
-        ctx.shared_store.insert(ClerkVerifier::new(&settings)?);
+        ctx.shared_store
+            .insert(Arc::new(ClerkVerifier::new(&settings)?));
         Ok(router)
     }
 }

@@ -16,7 +16,7 @@ fn verifier(parties: &[&str]) -> ClerkVerifier {
     ClerkVerifier::with_static_keys(ISSUER, parties, keys().jwks())
 }
 
-fn assert_rejected(result: Result<wardrowbe::clerk::Claims, VerifyError>) {
+fn assert_rejected(result: &Result<wardrowbe::clerk::Claims, VerifyError>) {
     assert!(
         matches!(result, Err(VerifyError::Rejected(_))),
         "expected a rejection, got {result:?}"
@@ -34,39 +34,39 @@ async fn accepts_a_valid_token() {
 #[tokio::test]
 async fn refuses_an_expired_token() {
     let token = keys().token(&with(claims("u"), "exp", json!(now() - 3600)));
-    assert_rejected(verifier(&[]).verify(&token).await);
+    assert_rejected(&verifier(&[]).verify(&token).await);
 }
 
 #[tokio::test]
 async fn refuses_a_token_that_is_not_valid_yet() {
     let token = keys().token(&with(claims("u"), "nbf", json!(now() + 3600)));
-    assert_rejected(verifier(&[]).verify(&token).await);
+    assert_rejected(&verifier(&[]).verify(&token).await);
 }
 
 #[tokio::test]
 async fn refuses_another_issuer() {
     let token = keys().token(&with(claims("u"), "iss", json!("https://evil.example")));
-    assert_rejected(verifier(&[]).verify(&token).await);
+    assert_rejected(&verifier(&[]).verify(&token).await);
 }
 
 #[tokio::test]
 async fn refuses_a_token_without_exp() {
     let mut body = claims("u");
     body.as_object_mut().unwrap().remove("exp");
-    assert_rejected(verifier(&[]).verify(&keys().token(&body)).await);
+    assert_rejected(&verifier(&[]).verify(&keys().token(&body)).await);
 }
 
 #[tokio::test]
 async fn refuses_a_token_signed_with_another_key() {
     // Same `kid`, different private key.
     let token = other_keys().token(&claims("u"));
-    assert_rejected(verifier(&[]).verify(&token).await);
+    assert_rejected(&verifier(&[]).verify(&token).await);
 }
 
 #[tokio::test]
 async fn refuses_an_unknown_key_id() {
     let token = keys().sign("some-other-kid", &claims("u"));
-    assert_rejected(verifier(&[]).verify(&token).await);
+    assert_rejected(&verifier(&[]).verify(&token).await);
 }
 
 // RFC 8725 §3.1: the algorithm is the server's choice, not the token's. An
@@ -81,13 +81,13 @@ async fn refuses_a_token_that_names_another_algorithm() {
         &EncodingKey::from_secret(b"anything"),
     )
     .unwrap();
-    assert_rejected(verifier(&[]).verify(&token).await);
+    assert_rejected(&verifier(&[]).verify(&token).await);
 }
 
 #[tokio::test]
 async fn refuses_garbage() {
     for token in ["", "not-a-jwt", "a.b.c"] {
-        assert_rejected(verifier(&[]).verify(token).await);
+        assert_rejected(&verifier(&[]).verify(token).await);
     }
 }
 
@@ -99,12 +99,12 @@ async fn checks_the_authorized_party_when_configured() {
         .await
         .expect("azp is on the list");
 
-    assert_rejected(verifier(&["https://other.example"]).verify(&good).await);
+    assert_rejected(&verifier(&["https://other.example"]).verify(&good).await);
 
     let mut no_azp = claims("u");
     no_azp.as_object_mut().unwrap().remove("azp");
     assert_rejected(
-        verifier(&["https://app.example.com"])
+        &verifier(&["https://app.example.com"])
             .verify(&keys().token(&no_azp))
             .await,
     );
@@ -156,7 +156,7 @@ async fn an_unknown_key_id_does_not_refetch_in_a_loop() {
     let forged = keys().sign("rotated-key", &claims("u"));
 
     for _ in 0..5 {
-        assert_rejected(verifier.verify(&forged).await);
+        assert_rejected(&verifier.verify(&forged).await);
     }
     assert_eq!(
         hits.load(Ordering::SeqCst),

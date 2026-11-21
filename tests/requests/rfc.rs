@@ -4,6 +4,7 @@
 use axum::http::Method;
 use loco_rs::testing::prelude::*;
 use serial_test::serial;
+use std::sync::Arc;
 use wardrowbe::{app::App, clerk::ClerkVerifier};
 
 use crate::support::{claims, keys, ISSUER};
@@ -64,7 +65,11 @@ async fn a_rejected_bearer_token_is_reported_as_invalid_token() {
 async fn a_rejected_token_does_not_reveal_why() {
     request::<App, _, _>(|request, ctx| async move {
         ctx.shared_store
-            .insert(ClerkVerifier::with_static_keys(ISSUER, &[], keys().jwks()));
+            .insert(Arc::new(ClerkVerifier::with_static_keys(
+                ISSUER,
+                &[],
+                keys().jwks(),
+            )));
         let expired = keys().token(&crate::support::with(
             claims("u"),
             "exp",
@@ -90,7 +95,7 @@ async fn a_rejected_token_does_not_reveal_why() {
 #[serial]
 async fn missing_clerk_configuration_is_a_500_that_does_not_leak() {
     request::<App, _, _>(|request, ctx| async move {
-        let _ = ctx.shared_store.remove::<ClerkVerifier>();
+        let _ = ctx.shared_store.remove::<Arc<ClerkVerifier>>();
         let response = request
             .get("/api/auth/current")
             .add_header(
@@ -150,7 +155,11 @@ async fn a_head_response_has_no_body() {
 async fn the_signed_in_user_is_not_cacheable() {
     request::<App, _, _>(|request, ctx| async move {
         ctx.shared_store
-            .insert(ClerkVerifier::with_static_keys(ISSUER, &[], keys().jwks()));
+            .insert(Arc::new(ClerkVerifier::with_static_keys(
+                ISSUER,
+                &[],
+                keys().jwks(),
+            )));
         let response = request
             .get("/api/auth/current")
             .add_header(
@@ -170,7 +179,11 @@ async fn the_signed_in_user_is_not_cacheable() {
 async fn the_pid_is_a_canonical_uuid() {
     request::<App, _, _>(|request, ctx| async move {
         ctx.shared_store
-            .insert(ClerkVerifier::with_static_keys(ISSUER, &[], keys().jwks()));
+            .insert(Arc::new(ClerkVerifier::with_static_keys(
+                ISSUER,
+                &[],
+                keys().jwks(),
+            )));
         let response = request
             .get("/api/auth/current")
             .add_header(
