@@ -25,7 +25,11 @@ use axum::{
     extract::{FromRef, FromRequestParts},
     http::request::Parts,
 };
-use base64::{engine::general_purpose::STANDARD, Engine};
+use base64::{
+    alphabet,
+    engine::{DecodePaddingMode, GeneralPurpose, GeneralPurposeConfig},
+    Engine,
+};
 use jsonwebtoken::{
     decode, decode_header,
     jwk::{Jwk, JwkSet},
@@ -117,13 +121,20 @@ impl ClerkSettings {
     }
 }
 
+/// Decodes base64 with or without the trailing `=`; Clerk's dashboard shows
+/// publishable keys without it.
+const KEY_BASE64: GeneralPurpose = GeneralPurpose::new(
+    &alphabet::STANDARD,
+    GeneralPurposeConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
+);
+
 /// The Frontend API URL inside a publishable key.
 ///
 /// The key is `pk_<test|live>_` followed by the base64 of `<domain>$`.
 #[must_use]
 pub fn issuer_from_publishable_key(key: &str) -> Option<String> {
     let encoded = key.trim().strip_prefix("pk_")?.split_once('_')?.1;
-    let decoded = STANDARD.decode(encoded).ok()?;
+    let decoded = KEY_BASE64.decode(encoded).ok()?;
     let domain = String::from_utf8(decoded).ok()?;
     let domain = domain.strip_suffix('$')?;
     let valid = !domain.is_empty()
@@ -444,6 +455,8 @@ fn bearer_token(parts: &Parts) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
+    use base64::engine::general_purpose::STANDARD;
+
     use super::*;
 
     fn settings(issuer: &str, jwks_url: &str, parties: &str) -> ClerkSettings {
@@ -493,6 +506,25 @@ mod tests {
             issuer_from_publishable_key(&live).as_deref(),
             Some("https://clerk.example.com")
         );
+    }
+
+    #[test]
+    fn a_key_without_base64_padding_still_gives_an_issuer() {
+        // Clerk's dashboard shows the key with the trailing `=` removed.
+        for domain in ["a.clerk.dev", "ab.clerk.dev", "abc.clerk.dev"] {
+            let padded = key_for(domain);
+            let unpadded = padded.trim_end_matches('=');
+            assert_eq!(
+                issuer_from_publishable_key(unpadded).as_deref(),
+                Some(format!("https://{domain}").as_str()),
+                "{unpadded}"
+            );
+            assert_eq!(
+                issuer_from_publishable_key(&padded).as_deref(),
+                Some(format!("https://{domain}").as_str()),
+                "{padded}"
+            );
+        }
     }
 
     #[test]
