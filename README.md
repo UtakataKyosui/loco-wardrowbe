@@ -87,7 +87,7 @@ cd frontend && pnpm dev               # frontend（同じシェルで起動す�
 - Clerk 独自ドメインを使うときだけ `CLERK_ISSUER` を足す。`CLERK_AUTHORIZED_PARTIES`（フロントのオリジン。カンマ区切り）を足すと、トークンの `azp` も検証する。production では設定を勧める。
 - 既定のセッショントークンにはメールアドレスも名前も入らない。保存したいときは Clerk ダッシュボードの Sessions → Customize session token に `{"email": "{{user.primary_email_address}}", "name": "{{user.full_name}}"}` を足す。無くても動く（画面には「—」を出す）。
 - 最初の API リクエストで `users` テーブルに行が作られる。Clerk 側でユーザーを消しても、この行は残る（`cargo loco task user:delete pid:... force:true` で消す）。
-- Docker では publishable key をビルド引数で渡す: `docker build --build-arg CLERK_PUBLISHABLE_KEY=pk_live_... .`。実行時にも同じ変数と `DATABASE_URL` が要る。
+- Docker / Vercel では、実行時の環境変数 `CLERK_PUBLISHABLE_KEY` と `DATABASE_URL` だけでよい。frontend は起動時に backend の `/config.json` から publishable key を読む。ビルド引数 `--build-arg CLERK_PUBLISHABLE_KEY=pk_live_...` を渡した場合は、その値をバンドルに埋め込み、そちらを優先する。
 
 ## Frontend と backend を並べて開発する
 

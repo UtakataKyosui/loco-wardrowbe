@@ -15,7 +15,8 @@ export default defineConfig(({ mode }) => {
   const backendPort = env.PORT || "5150";
 
   // Clerk's publishable key is public. The backend reads `CLERK_PUBLISHABLE_KEY`
-  // too, so one variable serves both; the bundle gets it at build time.
+  // too, so one variable serves both. A key present at build time is inlined;
+  // without one the SPA reads it from the backend (`/config.json`).
   const clerkKey = env.CLERK_PUBLISHABLE_KEY || env.VITE_CLERK_PUBLISHABLE_KEY || "";
 
   return {
@@ -38,7 +39,10 @@ export default defineConfig(({ mode }) => {
     ]),
     server: {
       port: 5173,
-      proxy: { "/api": `http://localhost:${backendPort}` },
+      proxy: {
+        "/api": `http://localhost:${backendPort}`,
+        "/config.json": `http://localhost:${backendPort}`,
+      },
     },
   };
 });

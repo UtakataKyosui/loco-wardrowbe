@@ -6,9 +6,10 @@ RUN pnpm --dir frontend install --frozen-lockfile
 COPY frontend frontend
 COPY openapi openapi
 ENV NODE_OPTIONS=--dns-result-order=ipv4first
-# Clerk's publishable key is public; the bundle needs it at build time.
+# Optional: a key given here is inlined into the bundle. Without one the SPA
+# reads the backend's own CLERK_PUBLISHABLE_KEY from /config.json at start-up.
 # docker build --build-arg CLERK_PUBLISHABLE_KEY=pk_live_...
-ARG CLERK_PUBLISHABLE_KEY
+ARG CLERK_PUBLISHABLE_KEY=
 ENV CLERK_PUBLISHABLE_KEY=$CLERK_PUBLISHABLE_KEY
 RUN pnpm --dir frontend build
 
