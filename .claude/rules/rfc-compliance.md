@@ -4,7 +4,7 @@ paths:
   - "src/views/**/*.rs"
   - "src/dtos/**/*.rs"
   - "src/models/users.rs"
-  - "src/mailers/**/*.rs"
+  - "src/clerk.rs"
   - "src/initializers/**/*.rs"
   - "config/*.yaml"
   - "openapi/**"
@@ -29,41 +29,36 @@ HTTP API の外から観測できる振る舞い（ステータス、ヘッダ�
 
 ## 必ず守ること
 
-1. **メソッドの安全性**: `GET` / `HEAD` / `OPTIONS` で状態を変えない（RFC 9110 §9.2.1）。状態を変える操作は `POST` / `PUT` / `PATCH` / `DELETE`。メールのリンクから開かれるトークンの検証も同じで、リンクは SPA のページ（`/verify#<token>`、`/magic-link#<token>`）を指し、ページが `POST /api/auth/verify` などの本文でトークンを送る。トークンを URL のパスやクエリに載せない（fragment は送信されない）。
+1. **メソッドの安全性**: `GET` / `HEAD` / `OPTIONS` で状態を変えない（RFC 9110 §9.2.1）。状態を変える操作は `POST` / `PUT` / `PATCH` / `DELETE`。トークンを URL のパスやクエリに載せない（fragment は送信されない）。`GET /api/auth/current` が初回に行を作るのは、副作用が冪等で、呼び出し側が結果として観測するものではないため、許容している（JIT プロビジョニング）。
 2. **401 には `WWW-Authenticate` を付ける**（RFC 9110 §15.5.2 の MUST）。同じミドルウェアが付ける: `Bearer realm="wardrowbe"`。トークンが無効・期限切れのときは `error="invalid_token"`、トークンを送っていないときは `error` を付けない（RFC 6750 §3）。
 3. **405 には `Allow` を付ける**（RFC 9110 §15.5.6）。axum のルーターが自動で付けるので、手書きのハンドラーで 405 を返すときだけ気をつける。
-4. **エラー本文は `application/problem+json`**（RFC 9457）。`type` / `title` / `status` / `detail` を持ち、`status` は実際の HTTP ステータスと一致させる。`src/initializers/problem_details.rs` のミドルウェアが `/api/` の全エラー応答（ハンドラー、`Json` / JWT の抽出子、404 / 405 を含む）をこの形に作り替えるので、ハンドラーは今までどおり `loco_rs::Error`（`unauthorized(...)` など）を返せばよい。内部エラーの詳細（SQL、スタック、パス）は 5xx の `detail` に出ない作りになっている（RFC 9457 §5）。新しいエラーの種類を足すときは、ミドルウェアの変換を通ることを `tests/requests/rfc.rs` で確かめる。
+4. **エラー本文は `application/problem+json`**（RFC 9457）。`type` / `title` / `status` / `detail` を持ち、`status` は実際の HTTP ステータスと一致させる。`src/initializers/problem_details.rs` のミドルウェアが `/api/` の全エラー応答（ハンドラー、`Json` / `ClerkAuth` の抽出子、404 / 405 を含む）をこの形に作り替えるので、ハンドラーは今までどおり `loco_rs::Error`（`unauthorized(...)` など）を返せばよい。内部エラーの詳細（SQL、スタック、パス）は 5xx の `detail` に出ない作りになっている（RFC 9457 §5）。新しいエラーの種類を足すときは、ミドルウェアの変換を通ることを `tests/requests/rfc.rs` で確かめる。
 5. **ステータスコードを使い分ける**: 作成は `201` + `Location`、本文なしの成功は `204`（本文を付けない）、非同期の受付は `202`、不正な JSON は `400`、`Content-Type` の不一致は `415`、構文は正しいが意味が不正な入力は `422`、レート制限は `429` + `Retry-After`。
-6. **トークンを返す応答は `Cache-Control: no-store`**（RFC 9111 §5.2.2.5、RFC 6749 §5.1 と同じ考え方）。ミドルウェアが `/api/auth/` の全応答に付ける。`token` を本文に含む応答を `/api/auth/` の外に作るときは、自分で付ける。
-7. **JWT**: 署名アルゴリズムの鍵長は RFC 7518 §3.2 に従う（HS512 は 512 ビット = 64 バイト以上）。`JwtSecretInitializer`（`src/initializers/jwt_secret.rs`）が、`auth.jwt.secret`（Loco は base64 としてデコードして鍵にする）がデコード後 64 バイト未満、または base64 でないときは起動しないようにしている。`exp` を必ず検証し、`alg` はサーバー側で固定する（RFC 8725）。トークンを URL（パス・クエリ）に載せない。
+6. **サインイン中のユーザー固有の応答は `Cache-Control: no-store`**（RFC 9111 §5.2.2.5）。ミドルウェアが `/api/auth/` の全応答に付ける。トークンを返す API はもう無い（トークンは Clerk が発行する）。`/api/auth/` の外にユーザー固有の応答を作るときは、自分で付ける。
+7. **JWT**: トークンは Clerk が RS256 で署名する。検証は `src/clerk.rs` の `ClerkVerifier` に集約している（RFC 8725）: `alg` は `RS256` に固定してトークンの `alg` を信用しない、`kid` が JWKS に無いトークンは拒否、`iss` は設定した issuer と完全一致、`exp` は必須で `nbf` も検証、`azp` は `authorized_parties` を設定したときに照合する。拒否の理由は応答に出さない（RFC 9457 §5）。鍵（JWKS）を取れないときは、呼び出し側の誤りではないので 401 ではなく 500（詳細は出さない）。未知の `kid` による JWKS の再取得は 30 秒に 1 回までにする。検証を足すときは `tests/clerk/mod.rs` に拒否するケースを足す。トークンを URL（パス・クエリ）に載せない。
 8. **日時は RFC 3339**（`2026-11-17T01:19:03Z`）。`chrono::DateTime<Utc>`（または `FixedOffset`）を使い、タイムゾーンを持たない `NaiveDateTime` をそのまま API に出さない。OpenAPI は `format: date-time`。
-9. **ID は UUID の正規形**（小文字 8-4-4-4-12、RFC 9562）。レスポンスの型は `String` ではなく `uuid::Uuid` にして、OpenAPI に `format: uuid` を出させる（`views/auth.rs` の `pid`）。
-10. **メールアドレスを正規表現で検証しない**。`validator` の `#[validate(email)]` を使う。ドメイン部は大文字小文字を区別しない（RFC 5321 §2.4、RFC 4343）ので、許可リストなどの比較は `eq_ignore_ascii_case` で行う（`controllers/auth.rs` の `is_allowed_email_domain`）。
+9. **ID は UUID の正規形**（小文字 8-4-4-4-12、RFC 9562）。レスポンスの型は `String` ではなく `uuid::Uuid` にして、OpenAPI に `format: uuid` を出させる（`views/auth.rs` の `pid`）。Clerk の `sub` は内部の紐づけ用で、API には出さない。。
+10. **メールアドレスを正規表現で検証しない**。メールアドレスの検証は Clerk に任せ、このアプリはトークンの `email` を保存するだけにする。自前で検証や比較が要るときは、`validator` の `#[validate(email)]` を使い、ドメイン部は大文字小文字を区別しない（RFC 5321 §2.4、RFC 4343）ので `eq_ignore_ascii_case` で比べる。
 11. **JSON は UTF-8**（RFC 8259 §8.1）。`Content-Type: application/json` に `charset` を付けない。JavaScript から読む整数 ID は 2^53 を超えない型にする（RFC 8259 §6）。
 12. **OpenAPI を実装に合わせる**: 返し得るステータス（400 / 401 / 415 / 422 など）、エラー本文 `dtos::common::ProblemDetails` と媒体型 `application/problem+json`、401 の `WWW-Authenticate` ヘッダー、`Location` / `Retry-After` を `#[utoipa::path]` に書く（`controllers/auth.rs` の既存の注釈をそのまま写せる）。`.claude/rules/api-codegen-pipeline.md` の段階 2 と併せて適用する。
 
 ## 準拠の状況（2026-11 時点）
 
-`.claude/skills/rfc-compliance/references/audit.md` の手順で実測した未準拠 10 件のうち、7 件を直した。固定するテストは `tests/requests/rfc.rs`（と `src/initializers/*` のユニットテスト）。
+ログインを Clerk に移したため、自前の認証 API（登録、確認メール、パスワード再設定、マジックリンク、ログイン）は無くなり、それらに関わる未準拠（GET の副作用、HMAC 鍵長、許可ドメインの大文字小文字、`200` + `null`）は対象外になった。残る API は `GET /api/auth/current` のみで、固定するテストは `tests/requests/rfc.rs` と `tests/clerk/mod.rs`、`src/initializers/*` のユニットテスト。
 
-| # | 内容 | 状態 | 直し方 |
+| # | 内容 | 状態 | 備考 |
 |---|---|---|---|
-| 1 | 401 に `WWW-Authenticate` が付かない（RFC 9110 §15.5.2） | 済 | `problem_details` ミドルウェアが付ける |
-| 2 | エラー本文が `application/problem+json` でない（RFC 9457） | 済 | 同上。`ProblemDetails` を OpenAPI にも反映 |
-| 3 | 415 / 422 / 不正 JSON の本文がどれも `Bad Request`。OpenAPI に 415 がない | 済 | ステータスに合う `title` / `detail`。検証エラーは 422 + `errors`（JSON Pointer）。OpenAPI に 415 / 422 |
-| 4 | GET が状態を変える。トークンが URL に載る（RFC 9110 §9.2.1、RFC 3986 §7.5） | 済 | `POST /api/auth/verify`、`POST /api/auth/magic-link/verify`（本文にトークン）。メールのリンクは SPA の `/verify#<token>`、`/magic-link#<token>`。旧 GET ルートは削除 |
-| 5 | dev / test の JWT 秘密鍵が 20 文字で、base64 デコード後は 15 バイト（RFC 7518 §3.2） | 済 | dev / test は、デコード後 64 バイト以上の、開発専用と分かる繰り返し文字列（development は `JWT_SECRET` で上書き可）。`JwtSecretInitializer` が、デコード後 64 バイト未満・base64 でない鍵での起動を拒否。高エントロピーの本物らしい値をリポジトリに置かない（GitGuardian が検出する） |
-| 6 | トークンを返す応答に `Cache-Control: no-store` がない（RFC 9111 §5.2.2.5） | 済 | ミドルウェアが `/api/auth/` の全応答に付ける |
-| 7 | 許可メールドメインの判定が大文字小文字を区別する（RFC 5321 §2.4） | 済 | `is_allowed_email_domain`（正規表現をやめ、`regex` 依存も削除） |
-| 8 | `register` などが本文 `null` の `200` を返す | 未対応（違反ではない） | `null` は有効な JSON で、RFC 9110 §15.3 に反しない。`202` / `204` への変更は契約の変更になるので、必要が出てからにする |
-| 9 | `pid` に OpenAPI の `format: uuid` がない（RFC 9562） | 済 | `pid: Uuid`。生成された Zod は `z.uuid()` |
-| 10 | レート制限と `429` / `Retry-After` がない | 未対応（RFC の要件ではない） | RFC 6585 §4 は 429 の意味を定めるだけで、制限を義務づけない。総当たり対策としては必要で、クライアント IP の取り方（リバースプロキシの構成）を決めてから入れる。Loco の `remote_ip` ミドルウェアが候補 |
+| 1 | 401 に `WWW-Authenticate` | 済 | `problem_details` ミドルウェア |
+| 2 | エラー本文が `application/problem+json` | 済 | 同上 |
+| 3 | 415 / 422 / 不正 JSON の区別 | 済 | 同上 |
+| 6 | ユーザー固有の応答に `no-store` | 済 | ミドルウェアが `/api/auth/` に付ける |
+| 9 | `pid` が UUID（`format: uuid`） | 済 | `pid: Uuid` |
+| 10 | レート制限と `429` / `Retry-After` | 未対応（RFC の要件ではない） | 認証の総当たりは Clerk 側が受ける。API 全体の制限は、クライアント IP の取り方（リバースプロキシの構成）を決めてから入れる。Loco の `remote_ip` ミドルウェアが候補 |
 
 この表にない既知の残り:
 
-- メールアドレスの正規化（全体を小文字にして保存・照合する）。既存の行の扱い（大文字小文字違いの重複）を決めてから入れる。
-- メールの `/reset#<token>` を受ける SPA のページがまだない（RFC ではなく機能の欠落）。
-- Loco の `secure_headers`（HSTS、`nosniff` など）は有効にしていない。CSP が SPA を壊すおそれがあるので、HSTS と `nosniff` だけの最小構成から検討する。
+- Loco の `secure_headers`（HSTS、`nosniff` など）は有効にしていない。CSP が SPA（と Clerk の読み込むスクリプト）を壊すおそれがあるので、HSTS と `nosniff` だけの最小構成から検討する。
+- `users` の行は、Clerk 側でユーザーを消しても残る（`user.deleted` の Webhook は未実装）。
 
 新しい未準拠を見つけたら、この表に足す。
 

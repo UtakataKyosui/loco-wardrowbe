@@ -1,5 +1,5 @@
 import type { ZodType } from "zod";
-import { clearToken, getToken } from "../auth/token";
+import { getToken } from "../auth/token";
 
 /** Shape of every generated client function's return value. */
 export type ApiResponse<T> = { data: T; status: number; headers: Headers };
@@ -15,7 +15,7 @@ export const customFetch = async <T>(
 ): Promise<T> => {
   const { schema, ...init } = options;
   const headers = new Headers(init.headers);
-  const token = getToken();
+  const token = await getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const res = await fetch(url, { credentials: "same-origin", ...init, headers });
@@ -30,9 +30,6 @@ export const customFetch = async <T>(
     }
   }
 
-  if (res.status === 401) {
-    clearToken();
-  }
   if (res.ok && schema && text) {
     data = schema.parse(data);
   }

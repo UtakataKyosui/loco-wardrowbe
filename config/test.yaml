@@ -18,7 +18,7 @@ logger:
 server:
   # Port on which the server will listen. the server binding is 0.0.0.0:{PORT}
   port: 5150
-  # The UI hostname or IP address that mailers will point to.
+  # The UI hostname or IP address. Nothing sends mail with links to it any more.
   host: http://localhost
   # Out of the box middleware configuration. to disable middleware you can changed the `enable` field to `false` of comment the middleware block
   middlewares: 
@@ -43,23 +43,6 @@ workers:
   mode: ForegroundBlocking
 
   
-
-# Mailer Configuration.
-mailer:
-  stub: true
-  # SMTP mailer configuration.
-  smtp:
-    # Enable/Disable smtp mailer.
-    enable: true
-    # SMTP server host. e.x localhost, smtp.gmail.com
-    host: <%= get_env(name="MAILER_HOST", default="localhost") %>
-    # SMTP server port
-    port: 1025
-    # Use secure connection (SSL/TLS).
-    secure: false
-    # auth:
-    #   user:
-    #   password:
 
 # Initializers Configuration
 # initializers:
@@ -91,11 +74,10 @@ database:
   # Recreating schema when application loaded.  This is a dangerous operation, make sure that you using this flag only on dev environments or test mode
   dangerously_recreate: true
 
-# Authentication Configuration
-auth:
-  # JWT authentication
-  jwt:
-    # Secret key for token generation and verification
-    secret: TestOnlyKeyTestOnlyKeyTestOnlyKeyTestOnlyKeyTestOnlyKeyTestOnlyKeyTestOnlyKeyTestOnlyKey
-    # Token expiration time in seconds
-    expiration: 604800 # 7 days
+# The tests sign their own tokens; see tests/requests/clerk.rs.
+settings:
+  clerk:
+    publishable_key: ""
+    issuer: "https://clerk.test.invalid"
+    jwks_url: ""
+    authorized_parties: ""

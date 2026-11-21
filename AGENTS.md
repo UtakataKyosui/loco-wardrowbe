@@ -34,6 +34,10 @@ not, read it directly — it is a normal markdown file.
 
 ステータス・ヘッダー・エラー本文・トークン・日時・ID を触るときは、`.claude/rules/rfc-compliance.md`（要点と現状の未準拠一覧）と `.claude/skills/rfc-compliance/`（根拠、実装方針、監査手順）に従う。応答は読むだけでなく実測して確かめる。
 
+## ログインは Clerk
+
+パスワード、確認メール、再設定、マジックリンク、JWT 発行は、このアプリには無い。ブラウザが Clerk から取ったセッショントークンを backend が検証する（`src/clerk.rs`、設定は `settings.clerk`、README の「ログイン（Clerk）」）。認証が要るハンドラーは引数に `ClerkAuth` を取る。`auth::JWT`（Loco 標準）は HMAC 専用で、Clerk のトークンは検証できない。
+
 ## Before you call it done
 
 ```sh

@@ -15,9 +15,7 @@ import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LookbookRouteImport } from './routes/lookbook'
-import { Route as MagicLinkRouteImport } from './routes/magic-link'
 import { Route as RegisterRouteImport } from './routes/register'
-import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ClosetIndexRouteImport } from './routes/closet.index'
 import { Route as ClosetItemIdRouteImport } from './routes/closet.$itemId'
 import { Route as ClosetNewRouteImport } from './routes/closet.new'
@@ -52,19 +50,9 @@ const LookbookRoute = LookbookRouteImport.update({
   path: '/lookbook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MagicLinkRoute = MagicLinkRouteImport.update({
-  id: '/magic-link',
-  path: '/magic-link',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VerifyRoute = VerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClosetIndexRoute = ClosetIndexRouteImport.update({
@@ -90,9 +78,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/login': typeof LoginRoute
   '/lookbook': typeof LookbookRoute
-  '/magic-link': typeof MagicLinkRoute
   '/register': typeof RegisterRoute
-  '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
   '/closet/new': typeof ClosetNewRoute
   '/closet/': typeof ClosetIndexRoute
@@ -104,9 +90,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/login': typeof LoginRoute
   '/lookbook': typeof LookbookRoute
-  '/magic-link': typeof MagicLinkRoute
   '/register': typeof RegisterRoute
-  '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
   '/closet/new': typeof ClosetNewRoute
   '/closet': typeof ClosetIndexRoute
@@ -119,9 +103,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/login': typeof LoginRoute
   '/lookbook': typeof LookbookRoute
-  '/magic-link': typeof MagicLinkRoute
   '/register': typeof RegisterRoute
-  '/verify': typeof VerifyRoute
   '/closet/$itemId': typeof ClosetItemIdRoute
   '/closet/new': typeof ClosetNewRoute
   '/closet/': typeof ClosetIndexRoute
@@ -135,9 +117,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/login'
     | '/lookbook'
-    | '/magic-link'
     | '/register'
-    | '/verify'
     | '/closet/$itemId'
     | '/closet/new'
     | '/closet/'
@@ -149,9 +129,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/login'
     | '/lookbook'
-    | '/magic-link'
     | '/register'
-    | '/verify'
     | '/closet/$itemId'
     | '/closet/new'
     | '/closet'
@@ -163,9 +141,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/login'
     | '/lookbook'
-    | '/magic-link'
     | '/register'
-    | '/verify'
     | '/closet/$itemId'
     | '/closet/new'
     | '/closet/'
@@ -178,9 +154,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   LoginRoute: typeof LoginRoute
   LookbookRoute: typeof LookbookRoute
-  MagicLinkRoute: typeof MagicLinkRoute
   RegisterRoute: typeof RegisterRoute
-  VerifyRoute: typeof VerifyRoute
   ClosetItemIdRoute: typeof ClosetItemIdRoute
   ClosetNewRoute: typeof ClosetNewRoute
   ClosetIndexRoute: typeof ClosetIndexRoute
@@ -230,25 +204,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LookbookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/magic-link': {
-      id: '/magic-link'
-      path: '/magic-link'
-      fullPath: '/magic-link'
-      preLoaderRoute: typeof MagicLinkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/register': {
       id: '/register'
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/verify': {
-      id: '/verify'
-      path: '/verify'
-      fullPath: '/verify'
-      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/closet/': {
@@ -282,9 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   LoginRoute: LoginRoute,
   LookbookRoute: LookbookRoute,
-  MagicLinkRoute: MagicLinkRoute,
   RegisterRoute: RegisterRoute,
-  VerifyRoute: VerifyRoute,
   ClosetItemIdRoute: ClosetItemIdRoute,
   ClosetNewRoute: ClosetNewRoute,
   ClosetIndexRoute: ClosetIndexRoute,

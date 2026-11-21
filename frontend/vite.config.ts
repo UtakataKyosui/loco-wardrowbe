@@ -14,7 +14,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, "..", "");
   const backendPort = env.PORT || "5150";
 
+  // Clerk's publishable key is public. The backend reads `CLERK_PUBLISHABLE_KEY`
+  // too, so one variable serves both; the bundle gets it at build time.
+  const clerkKey = env.CLERK_PUBLISHABLE_KEY || env.VITE_CLERK_PUBLISHABLE_KEY || "";
+
   return {
+    define: {
+      "import.meta.env.VITE_CLERK_PUBLISHABLE_KEY": JSON.stringify(clerkKey),
+    },
     fmt: {},
     lint: {
       jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],

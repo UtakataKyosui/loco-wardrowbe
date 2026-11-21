@@ -21,14 +21,18 @@ impl Task for UserDelete {
         let user_to_delete = users::Model::find_by_pid(&app_context.db, input).await?;
 
         println!(
-            "User to delete:\nUsername: {}\nEmail: {}\nPID: {}",
-            user_to_delete.name, user_to_delete.email, user_to_delete.pid
+            "User to delete:\nName: {}\nEmail: {}\nPID: {}\nClerk id: {}",
+            user_to_delete.display_name(),
+            user_to_delete.email.as_deref().unwrap_or("-"),
+            user_to_delete.pid,
+            user_to_delete.clerk_id.as_deref().unwrap_or("-")
         );
 
         if !force_flag {
             println!(
-                "Are you sure you want to delete the user {}\n({})\nwith pid '{}'?\nType 'yes' and hit enter to confirm",
-                user_to_delete.name, user_to_delete.email, user_to_delete.pid
+                "Are you sure you want to delete the user {} with pid '{}'?\nThis only removes the row here; delete the account in the Clerk dashboard too, or the user is re-created on their next request.\nType 'yes' and hit enter to confirm",
+                user_to_delete.display_name(),
+                user_to_delete.pid
             );
             // Read on a blocking thread: this is an async context, and stdin
             // blocks until the user types. Doing it inline stalls the runtime.
@@ -52,8 +56,8 @@ impl Task for UserDelete {
             }
         }
 
-        let user_name = user_to_delete.name.clone();
-        let user_email = user_to_delete.email.clone();
+        let user_name = user_to_delete.display_name().to_owned();
+        let user_email = user_to_delete.email.clone().unwrap_or_default();
         let user_pid = user_to_delete.pid;
 
         user_to_delete

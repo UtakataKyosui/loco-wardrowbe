@@ -1,5 +1,5 @@
 use loco_rs::{task, testing::prelude::*};
-use wardrowbe::{app::App, models::users};
+use wardrowbe::{app::App, clerk::Claims, models::users};
 
 use loco_rs::boot::run_task;
 use serial_test::serial;
@@ -9,12 +9,14 @@ use serial_test::serial;
 async fn can_run_user_delete_by_pid() {
     let boot = boot_test::<App>().await.unwrap();
 
-    let user = users::Model::create_with_password(
+    let user = users::Model::find_or_create_by_clerk(
         &boot.app_context.db,
-        &users::RegisterParams {
-            email: "test@example.com".to_string(),
-            password: "securepassword".to_string(),
-            name: "Test User".to_string(),
+        &Claims {
+            sub: "user_to_delete".to_string(),
+            iss: "https://clerk.test.invalid".to_string(),
+            azp: None,
+            email: Some("test@example.com".to_string()),
+            name: Some("Test User".to_string()),
         },
     )
     .await

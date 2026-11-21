@@ -30,15 +30,15 @@ use utoipa::{
 };
 use utoipa_scalar::{Scalar, Servable};
 
-use crate::{controllers, dtos, models::users, views};
+use crate::{controllers, dtos, views};
 
 /// Name of the JWT security scheme. `#[utoipa::path]` only accepts a string
 /// literal, so handlers spell it out:
 /// `security(("jwt_token" = []))`; keep the two in sync.
 pub const JWT_SECURITY_SCHEME: &str = "jwt_token";
 
-/// Registers the `jwt_token` bearer scheme (`Authorization: Bearer <jwt>`),
-/// which is Loco's default JWT location.
+/// Registers the `jwt_token` bearer scheme (`Authorization: Bearer <jwt>`):
+/// the session token Clerk issues to the signed-in browser.
 struct SecurityAddon;
 
 impl Modify for SecurityAddon {
@@ -64,27 +64,13 @@ impl Modify for SecurityAddon {
         description = "HTTP API of wardrowbe, built on [Loco](https://loco.rs)."
     ),
     modifiers(&SecurityAddon),
-    paths(
-        controllers::auth::register,
-        controllers::auth::verify,
-        controllers::auth::login,
-        controllers::auth::forgot,
-        controllers::auth::reset,
-        controllers::auth::current,
-        controllers::auth::magic_link,
-        controllers::auth::magic_link_verify,
-        controllers::auth::resend_verification_email,
-    ),
+    paths(controllers::auth::current),
     components(schemas(
         dtos::common::ProblemDetails,
         dtos::common::FieldError,
-        controllers::auth::TokenParams,
-        users::LoginParams,
-        users::RegisterParams,
-        views::auth::LoginResponse,
         views::auth::CurrentResponse,
     )),
-    tags((name = "auth", description = "Registration, login and account recovery"))
+    tags((name = "auth", description = "The signed-in user. Sign-in itself is handled by Clerk"))
 )]
 pub struct ApiDoc;
 
