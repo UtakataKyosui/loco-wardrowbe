@@ -74,8 +74,10 @@ database:
   uri: <%= get_env(name="DATABASE_URL") %>
   # When enabled, the sql query will be logged.
   enable_logging: <%= get_env(name="DB_LOGGING", default="false") %>
-  # Set the timeout duration when acquiring a connection.
-  connect_timeout: <%= get_env(name="DB_CONNECT_TIMEOUT", default="500") %>
+  # Set the timeout duration (ms) when acquiring a connection. A managed
+  # database is reached over the network with a TLS handshake, which does not
+  # fit in the development default of 500 ms.
+  connect_timeout: <%= get_env(name="DB_CONNECT_TIMEOUT", default="5000") %>
   # Set the idle duration before closing a connection.
   idle_timeout: <%= get_env(name="DB_IDLE_TIMEOUT", default="500") %>
   # Minimum number of connections for a pool.
