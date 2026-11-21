@@ -10,7 +10,7 @@ async fn serves_the_spec_and_the_ui() {
         let json = request.get("/api-docs/openapi.json").await;
         assert_eq!(json.status_code(), 200);
         let spec: serde_json::Value = json.json();
-        assert!(spec["paths"]["/api/auth/login"]["post"].is_object());
+        assert!(spec["paths"]["/api/auth/current"]["get"].is_object());
         assert_eq!(
             spec["components"]["securitySchemes"]["jwt_token"]["scheme"],
             "bearer"

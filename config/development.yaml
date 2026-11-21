@@ -22,7 +22,7 @@ server:
   port: <%= get_env(name="PORT", default="5150") %>
   # Binding for the server (which interface to bind to)
   binding: <%= get_env(name="BINDING", default="localhost") %>
-  # The UI hostname or IP address that mailers will point to.
+  # The UI hostname or IP address. Nothing sends mail with links to it any more.
   host: http://localhost
   # Out of the box middleware configuration. to disable middleware you can changed the `enable` field to `false` of comment the middleware block
   middlewares:
@@ -46,30 +46,6 @@ workers:
   mode: BackgroundAsync
 
   
-
-# Mailer Configuration.
-mailer:
-  # Sending mail in development needs something listening on the port below.
-  # Run a local catcher — mailpit, MailHog or maildev all default to SMTP on
-  # 1025 with a web inbox on 8025 — e.g. `docker run -p 1025:1025 -p 8025:8025
-  # axllent/mailpit`, then read the mail at http://localhost:8025.
-  # Prefer not to run one? Set `stub: true` here (as `config/test.yaml` does)
-  # to record deliveries in memory instead of sending them.
-  # SMTP mailer configuration.
-  smtp:
-    # Enable/Disable smtp mailer.
-    enable: true
-    # SMTP server host. e.x localhost, smtp.gmail.com
-    host: <%= get_env(name="MAILER_HOST", default="localhost") %>
-    # SMTP server port
-    port: 1025
-    # Use secure connection (SSL/TLS).
-    secure: false
-    # auth:
-    #   user:
-    #   password:
-    # Override the SMTP hello name (default is the machine's hostname)
-    # hello_name:
 
 # Initializers Configuration
 # initializers:
@@ -101,24 +77,17 @@ database:
   # Recreating schema when application loaded.  This is a dangerous operation, make sure that you using this flag only on dev environments or test mode
   dangerously_recreate: false
 
-# Authentication Configuration
-auth:
-  # JWT authentication
-  jwt:
-    # Secret key for token generation and verification. Loco decodes it as
-    # standard base64 and signs with HS512, which needs a key of at least 64
-    # bytes after decoding (RFC 7518 §3.2). This default is a development-only
-    # placeholder; `JWT_SECRET` overrides it.
-    secret: <%= get_env(name="JWT_SECRET", default="DevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKeyDevOnlyKey") %>
-    # Token expiration time in seconds
-    expiration: 604800 # 7 days
-    # Where to read the token from. Omitted => `Authorization: Bearer <token>`.
-    # A cookie or query parameter is a single map with a `from:` tag:
-    #
-    # location:
-    #   from: Cookie
-    #   name: auth_token
-    #
-    # `from:` is one of Bearer, Cookie, Query. Cookie and Query also take a
-    # `name:`. A YAML list of these tries each in order and uses the first
-    # that yields a token. See https://loco.rs/docs/how-to/jwt-locations
+# Clerk handles sign-in; the backend only verifies the session tokens.
+settings:
+  clerk:
+    # Clerk's publishable key (Dashboard → API keys). It is public, and the
+    # frontend build reads the same variable. The token issuer and the key set
+    # URL follow from it. Empty disables sign-in, so the app still boots
+    # without a Clerk account.
+    publishable_key: "<%= get_env(name="CLERK_PUBLISHABLE_KEY", default="") %>"
+    # Only for a custom Clerk domain; empty means the one in the publishable key.
+    issuer: "<%= get_env(name="CLERK_ISSUER", default="") %>"
+    # Empty means <issuer>/.well-known/jwks.json.
+    jwks_url: "<%= get_env(name="CLERK_JWKS_URL", default="") %>"
+    # Comma-separated origins allowed in the token's `azp` claim. Empty skips it.
+    authorized_parties: "<%= get_env(name="CLERK_AUTHORIZED_PARTIES", default="") %>"

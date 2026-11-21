@@ -8,8 +8,8 @@
 import * as zod from 'zod';
 
 export const CurrentResponse = zod.object({
-  "email": zod.string(),
-  "name": zod.string(),
+  "email": zod.string().nullish().describe('`null` until Clerk\'s session token carries an `email` claim.'),
+  "name": zod.string().describe('Display name; falls back to the e-mail address when Clerk sent no name.'),
   "pid": zod.uuid().describe('Public identifier of the user (RFC 9562 UUID).')
 })
 

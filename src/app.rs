@@ -13,7 +13,7 @@ use loco_rs::{
 use migration::Migrator;
 
 use crate::initializers::{
-    jwt_secret::JwtSecretInitializer, openapi::OpenapiInitializer,
+    clerk::ClerkInitializer, openapi::OpenapiInitializer,
     problem_details::ProblemDetailsInitializer,
 };
 use std::path::Path;
@@ -48,7 +48,7 @@ impl Hooks for App {
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
         Ok(vec![
-            Box::new(JwtSecretInitializer),
+            Box::new(ClerkInitializer),
             Box::new(OpenapiInitializer),
             Box::new(ProblemDetailsInitializer),
         ])
@@ -66,7 +66,6 @@ impl Hooks for App {
     #[allow(unused_variables)]
     fn register_tasks(tasks: &mut Tasks) {
         // tasks-inject (do not remove)
-        tasks.register(tasks::user_create::UserCreate);
         tasks.register(tasks::user_delete::UserDelete);
         tasks.register(tasks::openapi_export::OpenapiExport);
     }

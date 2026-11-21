@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { App } from "../App";
+import { ClerkAuthProvider } from "../auth/ClerkAuthProvider";
 import { SkipLink } from "../components/a11y/SkipLink";
 import "@utakata-ui/react/styles.css";
 import "../styles/theme.css";
@@ -36,9 +37,11 @@ function RootComponent() {
 
   return (
     <RootDocument>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
+      <ClerkAuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </ClerkAuthProvider>
     </RootDocument>
   );
 }

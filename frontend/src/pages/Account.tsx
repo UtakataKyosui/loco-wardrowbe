@@ -1,22 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useClerk } from "@clerk/clerk-react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Alert, Avatar, Button, Skeleton, Spinner } from "@utakata-ui/react";
+import { Alert, Avatar, Button, Skeleton } from "@utakata-ui/react";
 import { Effect } from "effect";
 import { Heading, Stack } from "lism-css/react";
-import { current, forgot } from "../api/generated/auth/auth";
+import { current } from "../api/generated/auth/auth";
 import { HttpError, callApi } from "../api/effect";
 import { useLogout } from "../auth/useLogout";
 import { MaterialIcon } from "../components/MaterialIcon";
 import "../components/account/account.css";
 
-type Notice = { kind: "success" | "error"; message: string };
-
 export function Account() {
   const navigate = useNavigate();
   const handleLogout = useLogout();
-  const [isSending, setIsSending] = useState(false);
-  const [notice, setNotice] = useState<Notice | null>(null);
+  const { openUserProfile } = useClerk();
 
   const profile = useQuery({
     queryKey: ["auth", "current"],
@@ -24,34 +22,13 @@ export function Account() {
     retry: false,
   });
 
-  // customFetch already dropped the token on 401; send the user to sign in again.
+  // The session is gone or was refused; send the user to sign in again.
   useEffect(() => {
     const err = profile.error;
     if (err instanceof HttpError && err.status === 401) {
       void navigate({ to: "/login", replace: true });
     }
   }, [profile.error, navigate]);
-
-  const sendResetMail = async () => {
-    if (!profile.data) return;
-    setNotice(null);
-    setIsSending(true);
-    try {
-      const res = await forgot({ email: profile.data.email });
-      setNotice(
-        res.status === 200
-          ? { kind: "success", message: "パスワード再設定のメールを送信しました。" }
-          : {
-              kind: "error",
-              message: "メールを送信できませんでした。時間をおいて再試行してください。",
-            },
-      );
-    } catch {
-      setNotice({ kind: "error", message: "サーバーに接続できませんでした。" });
-    } finally {
-      setIsSending(false);
-    }
-  };
 
   return (
     <Stack g="20">
@@ -94,39 +71,28 @@ export function Account() {
             </div>
             <dl className="c--accountRow">
               <dt>メールアドレス</dt>
-              <dd>{profile.data.email}</dd>
+              <dd>{profile.data.email ?? "—"}</dd>
             </dl>
           </>
         )}
       </section>
 
-      <section className="c--accountCard" aria-labelledby="account-password">
-        <h2 id="account-password" className="c--accountHead">
-          パスワード
+      <section className="c--accountCard" aria-labelledby="account-manage">
+        <h2 id="account-manage" className="c--accountHead">
+          アカウントの管理
         </h2>
         <p className="c--accountText">
-          登録済みのメールアドレスに、パスワード再設定用のリンクを送ります。
+          メールアドレス、パスワード、ログイン中の端末は Clerk の画面で変更できます。
         </p>
         <Button
           type="button"
           variant="outline"
           size="lg"
           w="100%"
-          disabled={isSending || !profile.data}
-          focusableWhenDisabled
-          aria-busy={isSending || undefined}
-          onClick={() => void sendResetMail()}
+          onClick={() => openUserProfile()}
         >
-          {isSending && <Spinner size="sm" decorative />}
-          {isSending ? "送信中…" : "再設定メールを送る"}
+          アカウントを管理する
         </Button>
-        <div role="status">
-          {notice && (
-            <Alert.Root variant={notice.kind === "error" ? "destructive" : "default"}>
-              <Alert.Description>{notice.message}</Alert.Description>
-            </Alert.Root>
-          )}
-        </div>
       </section>
 
       <section className="c--accountCard" aria-labelledby="account-session">

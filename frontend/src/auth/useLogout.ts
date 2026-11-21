@@ -1,10 +1,8 @@
-import { useNavigate } from "@tanstack/react-router";
-import { clearToken } from "./token";
+import { useClerk } from "@clerk/clerk-react";
 
 export function useLogout() {
-  const navigate = useNavigate();
+  const { signOut } = useClerk();
   return () => {
-    clearToken();
-    void navigate({ to: "/login" });
+    void signOut({ redirectUrl: "/" });
   };
 }

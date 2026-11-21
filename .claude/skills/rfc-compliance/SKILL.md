@@ -33,7 +33,9 @@ HTTP API の「外から観測できる振る舞い」が、該当する RFC の
 - **認証**: RFC 6750（Bearer）。このアプリは OAuth 2.0 の認可サーバーではないので、RFC 6749 のフローや RFC 9068（JWT アクセストークンのプロファイル）は**宣言しない限り適用外**。ただしトークン応答の扱いなど、考え方が参考になる箇所は流用する。
 - **トークン**: RFC 7519（JWT）、RFC 7518（JWA。鍵長）、RFC 8725（JWT のベストプラクティス）。
 - **データ**: RFC 8259（JSON）、RFC 3339（日時）、RFC 9562（UUID。RFC 4122 を置き換えた）、RFC 5321 / 5322 / 4343（メール、ドメインの大文字小文字）、RFC 3986（URI）。
-- **メールの本文・ヘッダー**: `src/mailers/**` が出すメール自体は RFC 5322 / 2045 系。送信は `lettre`（Loco 経由）が組み立てるので、件名の非 ASCII や `From` の形式を手で組まない。
+- **メールの本文・ヘッダー**: このアプリはメールを送らない（Clerk が送る）。
+
+> `references/` の一部（`audit.md`、`bearer-jwt.md`、`http-semantics.md`）は、Clerk に移る前の自前認証（`login`、`magic-link`、HMAC の鍵長など）を例にしている。原則は同じだが、API 名や手順はそのまま当てはまらない。現行の検証は `src/clerk.rs` と `tests/clerk/mod.rs` を見る。
 
 対象外の例: CORS（RFC ではなく Fetch Standard）、OpenAPI 自体（OAI の仕様。RFC 3986 / 6570 のパステンプレートに近い書式を使うだけ）。
 

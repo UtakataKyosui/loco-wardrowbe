@@ -7,8 +7,8 @@
 # secret or a localhost database is worse than one that refuses to boot.
 #
 # The variables this file requires:
-#   DATABASE_URL, JWT_SECRET, HOST, and the MAILER_* / REDIS_URL set below,
-#   depending on which features you generated.
+#   DATABASE_URL and CLERK_PUBLISHABLE_KEY (also needed when the frontend is
+#   built; the key is public).
 
 # Application logging configuration
 logger:
@@ -34,9 +34,9 @@ server:
   # `0.0.0.0`, not `localhost`: inside a container or a VM, a server bound to
   # loopback is unreachable from outside it.
   binding: <%= get_env(name="BINDING", default="0.0.0.0") %>
-  # The UI hostname or IP address that mailers will point to.
-  # Required: links in outgoing mail have to name the real host.
-  host: <%= get_env(name="HOST") %>
+  # The UI hostname or IP address. Nothing sends mail with links to it any more,
+  # so it only needs to be a valid URL.
+  host: <%= get_env(name="HOST", default="http://localhost") %>
   # Out of the box middleware configuration. to disable middleware you can changed the `enable` field to `false` of comment the middleware block
   middlewares:
     fallback:
@@ -59,24 +59,6 @@ workers:
   mode: BackgroundAsync
 
   
-
-# Mailer Configuration.
-mailer:
-  # SMTP mailer configuration.
-  smtp:
-    # Enable/Disable smtp mailer.
-    enable: true
-    # SMTP server host. e.x localhost, smtp.gmail.com
-    host: <%= get_env(name="MAILER_HOST") %>
-    # SMTP server port
-    port: <%= get_env(name="MAILER_PORT", default="587") %>
-    # Use secure connection (SSL/TLS).
-    secure: true
-    auth:
-      user: <%= get_env(name="MAILER_USER") %>
-      password: <%= get_env(name="MAILER_PASSWORD") %>
-    # Override the SMTP hello name (default is the machine's hostname)
-    # hello_name:
 
 # Initializers Configuration
 # initializers:
@@ -111,12 +93,17 @@ database:
   # Recreating schema when application loaded.  This is a dangerous operation, make sure that you using this flag only on dev environments or test mode
   dangerously_recreate: false
 
-# Authentication Configuration
-auth:
-  # JWT authentication
-  jwt:
-    # Secret key for token generation and verification. Required: a secret
-    # committed to the repository is a secret your users can forge tokens with.
-    secret: <%= get_env(name="JWT_SECRET") %>
-    # Token expiration time in seconds
-    expiration: 604800 # 7 days
+# Clerk handles sign-in; the backend only verifies the session tokens.
+settings:
+  clerk:
+    # Required: Clerk's publishable key (Dashboard → API keys). It is public,
+    # and the frontend build reads the same variable. The token issuer and the
+    # key set URL (<issuer>/.well-known/jwks.json) follow from it, so there is
+    # no secret to configure.
+    publishable_key: "<%= get_env(name="CLERK_PUBLISHABLE_KEY") %>"
+    # Only for a custom Clerk domain; empty means the one in the publishable key.
+    issuer: "<%= get_env(name="CLERK_ISSUER", default="") %>"
+    jwks_url: "<%= get_env(name="CLERK_JWKS_URL", default="") %>"
+    # Comma-separated origins allowed in the token's `azp` claim, e.g.
+    # https://app.example.com. Recommended; empty skips the check.
+    authorized_parties: "<%= get_env(name="CLERK_AUTHORIZED_PARTIES", default="") %>"
